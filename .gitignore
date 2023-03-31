@@ -298,3 +298,5 @@ Directory.Build.targets
 *local*
 nupkg
 *.runsettings
+/docs/api_reference/*
+!/docs/api_reference/Doxyfile
