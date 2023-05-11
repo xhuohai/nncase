@@ -6,7 +6,7 @@ import torch
 import shutil
 import os
 import numpy as np
-from test_runner import *
+from tests.test_runner import *
 from collections import ChainMap
 
 

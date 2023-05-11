@@ -103,7 +103,7 @@ def test_reduce_log_sum_exp(in_shape, axes, keepdims, request):
     if axes is None or len(axes) <= len(in_shape):
         model_def = _make_module(in_shape, axes, keepdims)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

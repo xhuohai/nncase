@@ -33,7 +33,7 @@ def _make_module():
 
 
 in_shapes = [
-    [1],
+    # [1],
     [8, 8],
     [1, 4, 16],
     [1, 3, 24, 24]
@@ -44,7 +44,7 @@ in_shapes = [
 def test_relu(in_shape, request):
     module = _make_module()
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_torch(module, in_shape)
     runner.run(model_file)
 

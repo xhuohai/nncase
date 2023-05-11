@@ -108,7 +108,7 @@ select_last_indices = [
 def test_argmin(in_shape, axis, keepdim, select_last_index, request):
     model_def = _make_module(in_shape, axis, keepdim, select_last_index)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

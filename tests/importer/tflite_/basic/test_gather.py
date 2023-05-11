@@ -49,7 +49,7 @@ in_shape_indice_axis_batch_dims = [
 @pytest.mark.parametrize('in_shape,indice,axis,batch_dims', in_shape_indice_axis_batch_dims)
 def test_gather(in_shape, indice, axis, batch_dims, request):
     module = _make_module(in_shape, indice, axis, batch_dims)
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_tensorflow(module)
     runner.run(model_file)
 

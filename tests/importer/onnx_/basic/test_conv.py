@@ -18,7 +18,7 @@ import pytest
 import onnx
 from onnx import helper
 from onnx import AttributeProto, TensorProto, GraphProto
-from onnx_test_runner import OnnxTestRunner
+from tests.onnx_test_runner import OnnxTestRunner
 import numpy as np
 
 
@@ -199,7 +199,7 @@ def test_conv(in_shape, kernel_output_channel, bias_shape, auto_pad_mode, dilati
         model_def = _make_module(in_shape, kernel_output_channel, bias_shape,
                                  auto_pad_mode, dilation, group, kernel_shape, pad, stride)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

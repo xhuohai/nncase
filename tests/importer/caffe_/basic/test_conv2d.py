@@ -91,7 +91,7 @@ dilations = [
 @pytest.mark.parametrize('padding', paddings)
 @pytest.mark.parametrize('dilation', dilations)
 def test_conv2d(n, i_channel, i_size, k_size, o_channel, stride, padding, dilation, request):
-    runner = CaffeTestRunner(request.node.name)
+    runner = CaffeTestRunner(request.node.name, ['k230'])
     model_path = os.path.join(os.getcwd(), 'tests_output',
                               request.node.name.replace('[', '_').replace(']', '_'))
     _make_module(model_path, n, i_channel, i_size, k_size, o_channel, stride, padding, dilation)

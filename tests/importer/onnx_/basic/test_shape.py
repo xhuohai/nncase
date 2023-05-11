@@ -130,7 +130,7 @@ def test_shape(in_shape, shape, start_and_end, request):
     start, end = start_and_end
     model_def = _make_module(in_shape, shape, start, end)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

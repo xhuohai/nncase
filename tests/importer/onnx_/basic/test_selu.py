@@ -85,7 +85,7 @@ gammas = [
 def test_selu(in_shape, alpha, gamma, request):
     model_def = _make_module(in_shape, alpha, gamma)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

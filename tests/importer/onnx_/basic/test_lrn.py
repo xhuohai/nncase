@@ -102,7 +102,7 @@ sizes = [
 def test_lrn(in_shape, alpha, beta, bias, size, request):
     model_def = _make_module(in_shape, alpha, beta, bias, size)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

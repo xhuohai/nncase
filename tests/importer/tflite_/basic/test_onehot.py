@@ -52,7 +52,7 @@ indices_depth_axis = [
 def test_onehot(indices, depth, axis, request):
     module = _make_module(indices, depth, axis)
 
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_tensorflow(module)
     runner.run(model_file)
 

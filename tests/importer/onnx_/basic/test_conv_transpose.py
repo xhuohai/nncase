@@ -94,7 +94,7 @@ def test_conv_transpose(in_size, in_channel, out_channel, kernel_size, stride, d
     model_file = _make_module(in_channel, out_channel, kernel_size,
                               stride, dilation, pad, group, bias)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_torch(model_file, [1, in_channel, *in_size])
     runner.run(model_file)
 

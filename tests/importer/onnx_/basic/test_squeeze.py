@@ -69,7 +69,7 @@ def test_squeeze(in_shape, out_channel, kernel_size, axis, request):
     dim = axis if out_shape[axis] == 1 else None
     module = _make_module(in_shape, out_channel, kernel_size, dim)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_torch(module, in_shape)
     runner.run(model_file)
 

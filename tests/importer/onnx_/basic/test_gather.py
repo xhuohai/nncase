@@ -73,7 +73,7 @@ in_shapes_indices_dim = [
 @pytest.mark.parametrize('in_shape,indices,dim', in_shapes_indices_dim)
 def test_gather(in_shape, indices, dim, request):
     model_def = _make_module(in_shape, indices, dim)
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

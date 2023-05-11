@@ -80,7 +80,7 @@ def test_reduce_window2d(n, i_channels, i_size, k_size, strides, padding, reques
         module = _make_module(n, i_channels, i_size, k_size,
                               strides, padding)
 
-        runner = TfliteTestRunner(request.node.name)
+        runner = TfliteTestRunner(request.node.name, ['k230'])
         model_file = runner.from_tensorflow(module)
         runner.run(model_file)
 

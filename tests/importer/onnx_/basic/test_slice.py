@@ -194,7 +194,7 @@ def test_slice(in_shape, start_end_axes_step_outshape, op_versions_and_value_for
         model_def = _make_module(in_shape, start, end, axes, step,
                                  outshape, op_version, value_format)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

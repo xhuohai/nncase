@@ -53,7 +53,7 @@ def test_transpose(in_shape, axis, request):
     if len(in_shape) > axis[1]:
         module = _make_module(axis[0], axis[1])
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_torch(module, in_shape)
         runner.run(model_file)
 

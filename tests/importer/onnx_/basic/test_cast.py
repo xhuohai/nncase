@@ -67,7 +67,7 @@ op_versions = [
 @pytest.mark.parametrize('op_version', op_versions)
 def test_cast(in_shape, in_type, out_type, op_version, request):
     model_def = _make_module(in_shape, in_type, out_type, op_version)
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

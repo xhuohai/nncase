@@ -66,7 +66,7 @@ rhs_shapes = [
 def test_binary(lhs_shape, rhs_shape, request):
     module = _make_module(rhs_shape)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_torch(module, lhs_shape)
     runner.run(model_file)
 

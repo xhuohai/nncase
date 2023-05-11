@@ -71,7 +71,7 @@ axes = [
 @pytest.mark.parametrize('i_size', i_sizes)
 @pytest.mark.parametrize('axis', axes)
 def test_concat(n, i_channel, i_size, axis, request):
-    runner = CaffeTestRunner(request.node.name)
+    runner = CaffeTestRunner(request.node.name, ['k230'])
     model_path = os.path.join(os.getcwd(), 'tests_output',
                               request.node.name.replace('[', '_').replace(']', '_'))
     _make_module(model_path, n, i_channel, i_size, axis)

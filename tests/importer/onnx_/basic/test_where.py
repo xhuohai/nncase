@@ -109,7 +109,7 @@ bc_types = [
 def test_where(in_shape_0, in_shape_1, in_shape_2, bc_type, request):
     model_def = _make_module(bc_type, in_shape_0, in_shape_1, in_shape_2)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

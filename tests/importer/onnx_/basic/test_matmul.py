@@ -126,7 +126,7 @@ def test_matmul(in_shape, b_format, request):
     in_a_shape, in_b_shape = in_shape
     model_def = _make_module(in_a_shape, in_b_shape, b_format)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

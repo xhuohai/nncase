@@ -89,7 +89,7 @@ op_versions = [
 def test_logsoftmax(in_shape, axis, op_version, request):
     model_def = _make_module(in_shape, axis, op_version)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

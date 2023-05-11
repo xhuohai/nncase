@@ -69,7 +69,7 @@ transposes = [
 @pytest.mark.parametrize('transpose', transposes)
 def test_inner_product(in_shape, num_output, axis, transpose, request):
     if axis < len(in_shape):
-        runner = CaffeTestRunner(request.node.name)
+        runner = CaffeTestRunner(request.node.name, ['k230'])
         model_path = os.path.join(os.getcwd(), 'tests_output',
                                   request.node.name.replace('[', '_').replace(']', '_'))
         _make_module(model_path, in_shape, num_output, axis, transpose)

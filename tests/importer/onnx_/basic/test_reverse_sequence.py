@@ -110,7 +110,7 @@ def test_reverse_sequence(in_shape, sequence_len, batch_axis, time_axis, request
     if (batch_axis in [None, 1] and time_axis in [None, 0] and in_shape[1] == len(sequence_len)) or (batch_axis == 0 and time_axis == 1 and in_shape[0] == len(sequence_len)):
         model_def = _make_module(in_shape, sequence_len, batch_axis, time_axis)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

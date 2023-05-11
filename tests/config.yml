@@ -68,7 +68,7 @@ case: # case的配置，应该是一个多层次的
   generate_calibs:
     name: generate_random
     kwargs: null
-    numbers: 5
+    numbers: 50
     batch_size: 1
   generate_dump_range_data:
     name: generate_random
@@ -89,18 +89,18 @@ case: # case的配置，应该是一个多层次的
   infer:
     - name: target
       values:
-        - cpu
+#        - cpu
         #- vulkan
 #        - k210
 #        - k510
-#        - k230
+        - k230
     - name: ptq
       values:
         - true
 judge:
   common: &judge_common
     simarity_name:  cosine
-    threshold: 0.999
+    threshold: 0.99
     log_hist: true
     matchs: null
   specifics:

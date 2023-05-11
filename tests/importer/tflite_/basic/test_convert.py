@@ -51,7 +51,7 @@ dst_types = [
 def test_convert(in_shape, dst_type, request):
     module = _make_module(in_shape, dst_type)
 
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_tensorflow(module)
     runner.run(model_file)
 

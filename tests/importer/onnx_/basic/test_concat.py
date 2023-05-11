@@ -52,7 +52,7 @@ def test_concat(in_shape, axis, request):
     if len(in_shape) > axis:
         module = _make_module(in_shape, axis)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_torch(module, in_shape)
         runner.run(model_file)
 

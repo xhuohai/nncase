@@ -58,7 +58,7 @@ def test_transpose(in_shape, perm, request):
     if len(perm) == len(in_shape):
         module = _make_module(in_shape, perm)
 
-        runner = TfliteTestRunner(request.node.name)
+        runner = TfliteTestRunner(request.node.name, ['k230'])
         model_file = runner.from_tensorflow(module)
         runner.run(model_file)
 

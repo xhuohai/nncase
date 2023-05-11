@@ -68,7 +68,7 @@ def test_pad(in_shape, paddings, mode, constant, request):
     if len(in_shape) == len(paddings):
         module = _make_module(in_shape, paddings, mode, constant)
 
-        runner = TfliteTestRunner(request.node.name)
+        runner = TfliteTestRunner(request.node.name, ['k230'])
         model_file = runner.from_tensorflow(module)
         runner.run(model_file)
 

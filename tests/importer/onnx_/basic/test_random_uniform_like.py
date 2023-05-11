@@ -122,7 +122,7 @@ seeds = [
 def test_random_uniform_like(in_shape, input_dtype, output_dtype, low, high, seed, request):
     model_def = _make_module(in_shape, input_dtype, output_dtype, low, high, seed)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

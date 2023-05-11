@@ -103,7 +103,7 @@ zero_points = [
 def test_dequantizelinear(in_shape, input_type, scale, zero_point, request):
     model_def = _make_module(in_shape, input_type, scale, zero_point)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

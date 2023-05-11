@@ -49,7 +49,7 @@ out_channels = [
 @pytest.mark.parametrize('in_shape', in_shapes)
 def test_slice_to_conv2d(in_shape, request):
     module = _make_module()
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_torch(module, in_shape)
     runner.run(model_file)
 

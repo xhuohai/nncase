@@ -34,7 +34,7 @@ in_shapes = [
 def test_expand_dims(in_shape, request):
     model = _make_model(in_shape)
 
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_keras(model)
     runner.run(model_file)
 

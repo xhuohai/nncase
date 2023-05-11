@@ -109,7 +109,7 @@ def test_unsqueeze(in_shape, axes, op_version, request):
     if len(in_shape) + len(axes) == 4:
         model_def = _make_module(in_shape, axes, op_version)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

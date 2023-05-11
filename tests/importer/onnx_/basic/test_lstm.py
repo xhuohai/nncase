@@ -67,7 +67,7 @@ def test_lstm(D, num_layers, batch_size, hidden_size, input_size, length, reques
 
     module = _make_module(model_shapes, h_0_shapes, c_0_shapes)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_torch(module, inputs_shapes)
     runner.run(model_file)
 

@@ -95,7 +95,7 @@ epsilons = [
 def test_batchnorm(in_shape, epsilon, request):
     model_def = _make_module(in_shape, epsilon)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

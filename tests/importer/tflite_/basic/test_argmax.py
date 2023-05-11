@@ -60,7 +60,7 @@ output_types = [
 def test_argmax(in_shape, axis, output_type, request):
     module = _make_module(in_shape, axis, output_type)
 
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_tensorflow(module)
     runner.run(model_file)
 

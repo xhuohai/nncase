@@ -79,7 +79,7 @@ indices_depth_axis = [
 @pytest.mark.parametrize('indices,depth,axis', indices_depth_axis)
 def test_onehot(indices, depth, axis, request):
     model_def = _make_module(indices, depth, axis)
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

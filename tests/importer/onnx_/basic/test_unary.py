@@ -54,7 +54,7 @@ in_shapes = [
 def test_unary(in_shape, request):
     module = _make_module()
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_torch(module, in_shape)
     runner.run(model_file)
 

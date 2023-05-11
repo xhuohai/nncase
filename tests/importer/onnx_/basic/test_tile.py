@@ -148,7 +148,7 @@ def test_tile(in_shape, axis, repeat, op_version, request):
     if ((op_version == 1 and len(repeat) == 1) or (op_version in [6, 11] and len(in_shape) == len(repeat))):
         model_def = _make_module(in_shape, axis, repeat, op_version)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

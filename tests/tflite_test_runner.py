@@ -1,5 +1,5 @@
 import tensorflow as tf
-from test_runner import *
+from tests.test_runner import *
 import os
 import shutil
 

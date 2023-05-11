@@ -60,7 +60,7 @@ orders = [
 @pytest.mark.parametrize('order', orders)
 def test_permute(in_shape, order, request):
     if len(order) == len(in_shape):
-        runner = CaffeTestRunner(request.node.name)
+        runner = CaffeTestRunner(request.node.name, ['k230'])
         model_path = os.path.join(os.getcwd(), 'tests_output',
                                   request.node.name.replace('[', '_').replace(']', '_'))
         _make_module(model_path, in_shape, order)

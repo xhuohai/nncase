@@ -72,7 +72,7 @@ coeffs = [
 @pytest.mark.parametrize('operation', operations)
 @pytest.mark.parametrize('coeff', coeffs)
 def test_binary_coeff(n, i_channel, i_size, operation, coeff, request):
-    runner = CaffeTestRunner(request.node.name)
+    runner = CaffeTestRunner(request.node.name, ['k230'])
     model_path = os.path.join(os.getcwd(), 'tests_output',
                               request.node.name.replace('[', '_').replace(']', '_'))
     _make_module(model_path, n, i_channel, i_size, operation, coeff)

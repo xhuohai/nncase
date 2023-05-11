@@ -61,7 +61,7 @@ use_biases = [
 def test_fully_connected(input_shape, unit: int, activation: None, use_bias: bool, request):
     module = _make_module(input_shape, unit, activation, use_bias)
 
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_tensorflow(module)
     runner.run(model_file)
 

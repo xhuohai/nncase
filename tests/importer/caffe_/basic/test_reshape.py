@@ -49,7 +49,7 @@ out_shapes = [
 @pytest.mark.parametrize('in_shape', in_shapes)
 @pytest.mark.parametrize('out_shape', out_shapes)
 def test_reshape(in_shape, out_shape, request):
-    runner = CaffeTestRunner(request.node.name)
+    runner = CaffeTestRunner(request.node.name, ['k230'])
     model_path = os.path.join(os.getcwd(), 'tests_output',
                               request.node.name.replace('[', '_').replace(']', '_'))
     _make_module(model_path, in_shape, out_shape)

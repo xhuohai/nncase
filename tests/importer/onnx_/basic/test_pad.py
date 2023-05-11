@@ -168,7 +168,7 @@ def test_pad(in_shape, padding, constant_value, mode, op_version_and_value_forma
     op_version, value_format = op_version_and_value_format
     model_def = _make_module(in_shape, padding, constant_value, mode, op_version, value_format)
 
-    runner = OnnxTestRunner(request.node.name)
+    runner = OnnxTestRunner(request.node.name, ['k230'])
     model_file = runner.from_onnx_helper(model_def)
     runner.run(model_file)
 

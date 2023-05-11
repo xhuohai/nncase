@@ -135,7 +135,7 @@ def test_topk(in_shape, k, axis, largest, sorted, request):
     if (k <= in_shape[idx]):
         model_def = _make_module(in_shape, k, axis, largest, sorted)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

@@ -55,7 +55,7 @@ in_shape_indices_batch_dims = [
 @pytest.mark.parametrize('in_shape,indices,batch_dims', in_shape_indices_batch_dims)
 def test_gather_nd(in_shape, indices, batch_dims, request):
     module = _make_module(in_shape, indices, batch_dims)
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_tensorflow(module)
     runner.run(model_file)
 

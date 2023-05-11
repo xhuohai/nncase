@@ -142,7 +142,7 @@ def test_clip(in_shape, minimum, maximum, op_versions_and_value_format, request)
     if minimum is None or maximum is None or minimum <= maximum:
         model_def = _make_module(in_shape, minimum, maximum, op_version, value_format)
 
-        runner = OnnxTestRunner(request.node.name)
+        runner = OnnxTestRunner(request.node.name, ['k230'])
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 

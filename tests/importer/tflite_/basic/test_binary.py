@@ -67,7 +67,7 @@ rhs_shapes = [
 def test_binary(lhs_shape, rhs_shape, request):
     module = _make_module(lhs_shape, rhs_shape)
 
-    runner = TfliteTestRunner(request.node.name)
+    runner = TfliteTestRunner(request.node.name, ['k230'])
     model_file = runner.from_tensorflow(module)
     runner.run(model_file)
 
