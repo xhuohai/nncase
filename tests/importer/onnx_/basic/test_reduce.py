@@ -109,7 +109,7 @@ def test_reduce(in_shape, reduce_op, axes, keepdims, request):
     if len(axes) <= len(in_shape):
         model_def = _make_module(in_shape, reduce_op, axes, keepdims)
 
-        runner = OnnxTestRunner(request.node.name, ['k510'])
+        runner = OnnxTestRunner(request.node.name)
         model_file = runner.from_onnx_helper(model_def)
         runner.run(model_file)
 
