@@ -62,7 +62,9 @@ def _make_module(in_shape, axes, keepdims):
         [output],
         initializer=initializers)
 
-    model_def = helper.make_model(graph_def, producer_name='kendryte')
+    op = onnx.OperatorSetIdProto()
+    op.version = 13
+    model_def = helper.make_model(graph_def, producer_name='kendryte', opset_imports=[op])
 
     return model_def
 

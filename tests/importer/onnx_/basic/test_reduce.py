@@ -63,7 +63,9 @@ def _make_module(in_shape, reduce_op, axes, keepdims):
         [output],
         initializer=initializers)
 
-    model_def = helper.make_model(graph_def, producer_name='onnx')
+    op = onnx.OperatorSetIdProto()
+    op.version = 13
+    model_def = helper.make_model(graph_def, producer_name='onnx', opset_imports=[op])
     return model_def
 
 
