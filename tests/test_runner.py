@@ -54,6 +54,11 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
         self.shape_vars = {}
         # used for tag dynamic model for onnx simplify
         self.dynamic = False
+        self.dict= {}
+        self.dict[case_name] = {}
+        if self.cfg['profiling_file'] != '':
+            self.dict[case_name]['if_quant_type'] = config['ptq_opt']['quant_type']
+            self.dict[case_name]['w_quant_type'] = config['ptq_opt']['w_quant_type']
 
     def transform_input(self, values: List[np.ndarray], type: str, stage: str) -> List[np.ndarray]:
         new_values = []
@@ -260,6 +265,10 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
         if test_utils.in_ci():
             self.clear(self.case_dir)
 
+        if self.cfg['profiling_file'] != '':
+            with open(self.cfg['profiling_file'], 'a') as f:
+                f.write(json.dumps(self.dict))
+
     def translate_shape(self, shape):
         if reduce(lambda x, y: x * y, shape) == 0:
             return [(i if i != 0 else d) for i, d in zip(shape, [3, 4, 256, 256])]
@@ -407,17 +416,19 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
                         stage, target, similarity_name, mode, threshold, dump_hist, dump_dir) -> Tuple[bool, str]:
         i = 0
         judges = []
+        result = ''
         for expected, actual in zip(ref_ouputs, test_outputs):
             expected = expected.astype(np.float32)
             actual = actual.astype(np.float32)
             dump_file = os.path.join(dump_dir, 'nncase_result_{0}_hist.csv'.format(i))
             judge, similarity_info = compare_ndarray(
                 expected, actual, similarity_name, threshold, dump_hist, dump_file)
-            result_info = "\n{0} [ {1} {2} {3} ] Output: {4}!!\n".format(
+            result_info = "{0} [ {1} {2} {3} ] Output {4}:".format(
                 'Pass' if judge else 'Fail', stage, target, mode, i)
-            result = similarity_info + result_info
-            with open(os.path.join(self.case_dir, 'test_result.txt'), 'a+') as f:
-                f.write(result)
+            result += result_info + similarity_info
             i = i + 1
             judges.append(judge)
+
+        with open(os.path.join(self.case_dir, 'test_result.txt'), 'a+') as f:
+            f.write(result)
         return sum(judges) == len(judges), result

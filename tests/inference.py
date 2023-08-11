@@ -7,6 +7,7 @@ import preprocess_utils
 import socket
 import json
 from test_utils import *
+import time
 
 
 class Inference:
@@ -35,7 +36,15 @@ class Inference:
             sim = nncase.Simulator()
             sim.load_model(kmodel)
             self.set_infer_input(sim, compile_opt)
+            start = time.time()
             sim.run()
+            stop = time.time()
+
+            if self.cfg['profiling_file'] != '':
+                case = os.path.basename(self.case_dir)
+                self.dict[case]['time'] = str(result_dict['time'])
+                self.dict[case]['fps'] = str(1000 / result_dict['time'])
+
             outputs = self.dump_infer_output(sim, compile_opt, infer_dir)
         return outputs
 
@@ -126,8 +135,15 @@ class Inference:
 
         # get infer result
         outputs = []
-        cmd_result = client_socket.recv(1024).decode()
-        if cmd_result.find('finish') != -1:
+        result_dict = {}
+        ret = client_socket.recv(1024)
+        result_dict = json.loads(ret.decode())
+        if result_dict['type'].find('finish') != -1:
+            print('infer time = {0}'.format(result_dict['time']))
+            if self.cfg['profiling_file'] != '':
+                self.dict[header_dict['case']]['time'] = str(result_dict['time'])
+                self.dict[header_dict['case']]['fps'] = str(1000 / result_dict['time'])
+
             client_socket.sendall(f"pls send outputs".encode())
 
             # recv outputs
@@ -150,6 +166,6 @@ class Inference:
             client_socket.close()
         else:
             client_socket.close()
-            raise Exception(f'{cmd_result}')
+            raise Exception(result_dict['error'])
 
         return outputs

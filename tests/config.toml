@@ -1,6 +1,7 @@
 name = 'default_config'
 root = 'tests_output'
 dump_hist = false
+profiling_file = "benchmark_model.json"
 
 [compile_opt]
 preprocess = false
