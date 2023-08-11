@@ -1,7 +1,7 @@
 name = 'default_config'
 root = 'tests_output'
 dump_hist = false
-profiling_file = "benchmark_model.json"
+# profiling_file = "benchmark_model.json"
 
 [compile_opt]
 preprocess = false
@@ -83,6 +83,7 @@ args = []
 [target.cpu]
 eval = true
 infer = true
+profiling_infer = true
 similarity_name = 'cosine'
 
 [target.cpu.mode.noptq]
@@ -96,6 +97,7 @@ threshold = 0.98
 [target.k510]
 eval = true
 infer = true
+profiling_infer = false
 similarity_name = 'cosine'
 
 [target.k510.mode.noptq]
@@ -109,6 +111,7 @@ threshold = 0.98
 [target.k230]
 eval = true
 infer = true
+profiling_infer = true
 similarity_name = 'cosine'
 
 [target.k230.mode.noptq]

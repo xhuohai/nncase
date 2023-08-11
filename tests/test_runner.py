@@ -54,11 +54,11 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
         self.shape_vars = {}
         # used for tag dynamic model for onnx simplify
         self.dynamic = False
-        self.dict= {}
-        self.dict[case_name] = {}
-        if self.cfg['profiling_file'] != '':
-            self.dict[case_name]['if_quant_type'] = config['ptq_opt']['quant_type']
-            self.dict[case_name]['w_quant_type'] = config['ptq_opt']['w_quant_type']
+        self.profiling_dict= {}
+        # self.dict[case_name] = {}
+        # if self.cfg['profiling_file'] != '':
+        #     self.dict[case_name]['if_quant_type'] = config['ptq_opt']['quant_type']
+        #     self.dict[case_name]['w_quant_type'] = config['ptq_opt']['w_quant_type']
 
     def transform_input(self, values: List[np.ndarray], type: str, stage: str) -> List[np.ndarray]:
         new_values = []
@@ -257,6 +257,9 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
                             judge, result = self.compare_results(
                                 expected, actual, stage, k_target, v_target['similarity_name'], k_mode, v_mode['threshold'], dump_hist, mode_dir)
 
+                            if stage == 'infer' and targets[k_target]['profiling_infer']:
+                                    with open('profiling.json', 'a') as f:
+                                        f.write(json.dumps(self.profiling_dict))
                             if not judge:
                                 if test_utils.in_ci():
                                     self.clear(self.case_dir)
@@ -265,9 +268,6 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
         if test_utils.in_ci():
             self.clear(self.case_dir)
 
-        if self.cfg['profiling_file'] != '':
-            with open(self.cfg['profiling_file'], 'a') as f:
-                f.write(json.dumps(self.dict))
 
     def translate_shape(self, shape):
         if reduce(lambda x, y: x * y, shape) == 0:

@@ -20,8 +20,19 @@ class Inference:
         running_on_evb = in_ci and target in kpu_targets and nuc_ip is not None and nuc_port is not None and test_executable is not None and len(
             self.inputs) > 0 and len(self.outputs) > 0
 
+        new_case = os.path.basename(self.case_dir) + '_' + target
+        targets = self.cfg['target']
+        if targets[target]['profiling_infer']:
+            self.profiling_dict.clear()
+            self.profiling_dict[new_case] = {}
         if ptq_enabled:
             self.set_quant_opt(compiler)
+
+            if targets[target]['profiling_infer']:
+                case = os.path.basename(self.case_dir)
+                self.profiling_dict[new_case]['if_quant_type'] = self.cfg['ptq_opt']['quant_type']
+                self.profiling_dict[new_case]['w_quant_type'] = self.cfg['ptq_opt']['w_quant_type']
+
         compiler.compile()
         kmodel = compiler.gencode_tobytes()
         os.makedirs(infer_dir, exist_ok=True)
@@ -36,14 +47,17 @@ class Inference:
             sim = nncase.Simulator()
             sim.load_model(kmodel)
             self.set_infer_input(sim, compile_opt)
-            start = time.time()
-            sim.run()
-            stop = time.time()
 
-            if self.cfg['profiling_file'] != '':
-                case = os.path.basename(self.case_dir)
-                self.dict[case]['time'] = str(result_dict['time'])
-                self.dict[case]['fps'] = str(1000 / result_dict['time'])
+            if targets[target]['profiling_infer']:
+                t1 = time.perf_counter()
+
+            sim.run()
+
+            if targets[target]['profiling_infer']:
+                t = time.perf_counter() - t1
+                # print('sim: t = {0}'.format(t))
+                self.profiling_dict[new_case]['time'] = str(t)
+                self.profiling_dict[new_case]['fps'] = str(1000 / t)
 
             outputs = self.dump_infer_output(sim, compile_opt, infer_dir)
         return outputs
@@ -139,10 +153,11 @@ class Inference:
         ret = client_socket.recv(1024)
         result_dict = json.loads(ret.decode())
         if result_dict['type'].find('finish') != -1:
-            print('infer time = {0}'.format(result_dict['time']))
-            if self.cfg['profiling_file'] != '':
-                self.dict[header_dict['case']]['time'] = str(result_dict['time'])
-                self.dict[header_dict['case']]['fps'] = str(1000 / result_dict['time'])
+            # print('infer time = {0}'.format(result_dict['time']))
+            if self.cfg['target'][target]['profiling_infer']:
+                new_case = header_dict['case'] + '_' + target
+                self.profiling_dict[new_case]['time'] = str(result_dict['time'])
+                self.profiling_dict[new_case]['fps'] = str(1000 / result_dict['time'])
 
             client_socket.sendall(f"pls send outputs".encode())
 
