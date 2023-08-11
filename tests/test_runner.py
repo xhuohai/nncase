@@ -258,6 +258,8 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
                                 expected, actual, stage, k_target, v_target['similarity_name'], k_mode, v_mode['threshold'], dump_hist, mode_dir)
 
                             if stage == 'infer' and targets[k_target]['profiling_infer']:
+                                    new_case = os.path.basename(self.case_dir) + '_' + k_target
+                                    self.profiling_dict[new_case]['similarity'] = result
                                     with open('profiling.json', 'a') as f:
                                         f.write(json.dumps(self.profiling_dict))
                             if not judge:
