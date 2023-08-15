@@ -48,14 +48,12 @@ class Inference:
 
             if self.cfg['profiling_infer']:
                 t1 = time.perf_counter()
-
             sim.run()
 
             if self.cfg['profiling_infer']:
-                t = time.perf_counter() - t1
-                # print('sim: t = {0}'.format(t))
+                t = (time.perf_counter() - t1) * 1000
                 self.profiling_dict['time'] = str(t)
-                self.profiling_dict['fps'] = str(1000 / t)
+                self.profiling_dict['fps'] = str(round(1000 / t, 2))
 
             outputs = self.dump_infer_output(sim, compile_opt, infer_dir)
         return outputs
@@ -151,10 +149,10 @@ class Inference:
         ret = client_socket.recv(1024)
         result_dict = json.loads(ret.decode())
         if result_dict['type'].find('finish') != -1:
-            # print('infer time = {0}'.format(result_dict['time']))
             if self.cfg['profiling_infer']:
-                self.profiling_dict['time'] = str(result_dict['time'])
-                self.profiling_dict['fps'] = str(1000 / result_dict['time'])
+                t = result_dict['time']
+                self.profiling_dict['time'] = str(t)
+                self.profiling_dict['fps'] = str(round(1000 / t, 2))
 
             client_socket.sendall(f"pls send outputs".encode())
 
