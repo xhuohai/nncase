@@ -21,7 +21,6 @@ class Inference:
             self.inputs) > 0 and len(self.outputs) > 0
 
         if self.cfg['profiling_infer']:
-            self.profiling_dict.clear()
             self.profiling_dict['case'] = os.path.basename(self.case_dir)
             self.profiling_dict['target'] = target
         if ptq_enabled:

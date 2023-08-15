@@ -55,10 +55,6 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
         # used for tag dynamic model for onnx simplify
         self.dynamic = False
         self.profiling_dict= {}
-        # self.dict[case_name] = {}
-        # if self.cfg['profiling_file'] != '':
-        #     self.dict[case_name]['if_quant_type'] = config['ptq_opt']['quant_type']
-        #     self.dict[case_name]['w_quant_type'] = config['ptq_opt']['w_quant_type']
 
     def transform_input(self, values: List[np.ndarray], type: str, stage: str) -> List[np.ndarray]:
         new_values = []
@@ -258,11 +254,19 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
                                 expected, actual, stage, k_target, v_target['similarity_name'], k_mode, v_mode['threshold'], dump_hist, mode_dir)
 
                             if stage == 'infer' and self.cfg['profiling_infer']:
-                                    # new_case = os.path.basename(self.case_dir)
                                     self.profiling_dict['similarity'] = result
-                                    with open('profiling.json', 'a') as f:
-                                        # f.write(json.dumps(self.profiling_dict))
-                                        json.dump(self.profiling_dict, f)
+
+                                    json_list = []
+                                    json_file = 'profiling_infer.json'
+                                    if os.path.exists(json_file):
+                                        with open(json_file, 'r') as f:
+                                            json_list = json.load(f)
+
+                                    json_list.append(self.profiling_dict)
+                                    with open(json_file, 'w') as f:
+                                        json.dump(json_list, f)
+
+                                    self.profiling_dict.clear()
                             if not judge:
                                 if test_utils.in_ci():
                                     self.clear(self.case_dir)
