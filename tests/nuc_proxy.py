@@ -144,7 +144,7 @@ def infer_worker(target):
 
         for cmd in cmds.split(';'):
             ret = target.s1.run_cmd(cmd, separator)
-            target.logger.debug("ret = {0}".format(ret))
+            # target.logger.debug("ret = {0}".format(ret))
 
         # infer result
         dict = {'type': 'finish', 'time': 0.0, 'error': ''}
