@@ -271,9 +271,9 @@ result<void> optimized_softmax_impl(const float *input, float *output,
                 // auto v_out = exp_ps(
                 //     vfmul_vf_f32m8(vfsub_vf_f32m8(v_in, max, vl), beta, vl),
                 //     vl);
-                // auto v_out = exp_ps(v_in, vl);
+                auto v_out = exp_ps(v_in, vl);
                 // printf("---------call softmax rvv ------------\n");
-                auto v_out = exp_ps2(v_in, vl);
+                // auto v_out = exp_ps2(v_in, vl);
                 
                 s = vfredosum_vs_f32m8_f32m1(s, v_out, s, vl);
 
