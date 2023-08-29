@@ -20,7 +20,7 @@ def compile_kmodel(model_path):
 
 # test failed when the conf in toml but do not set the default value of compile option
 def test_compile_option_default_value():
-    model_path = "../../examples/user_guide/test.onnx"
+    model_path = "examples/user_guide/test.onnx"
     kmodel_path = compile_kmodel(model_path)
 
 if __name__ == "__main__":
