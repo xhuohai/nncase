@@ -28,8 +28,6 @@ using namespace nncase::kernels::stackvm::optimized;
 #include <typeinfo>
 #include <cxxabi.h>
 
-// #define ToChar(x) #@x
-#define RVV_LMUL 8
 #define _STR(x) #x
 #define STR(x) _STR(x)
 #define _CONNECT(a, b) a##b
@@ -77,8 +75,49 @@ static void s##src_date_type_len##_i##index_date_type_len##_impl(const void*src,
             : "t0", "a0", "a1", "a2", "a3","a4","t1","t2","t3", "ft0", "v8", "v16");          \
 }                                                                                              
 
+
+
+#define REGISTER_GATHER_IMPL2(src_date_type_len, index_date_type_len, src_lmul, index_lmul, src_bit_shift, index_bit_shift)    \
+static void s##src_date_type_len##_i##index_date_type_len##_impl2(const void*src, void* dst, const void* index_ptr, int index_count, int block_size)   \
+{                                                                                             \
+            __asm volatile(                                                                   \
+            "mv a0, %[index_count];"                                                          \
+            "mv a1, %[block_size];"                                                           \
+            "mv a2, %[dst];"                                                                  \
+            "mv a3, %[index_ptr];"                                                            \
+            "addi t4,x0, 8;"                                                                  \
+        "gater_STRAT%=:;"                                                                     \
+            vsetvli_macro(t0, a0, index_date_type_len, index_lmul)                            \
+            "sub a0, a0, t0;"                                                                 \
+            vle_len_macro(index_date_type_len,v8,(a3))                                        \
+            vsllvi_len_macro(v8,v8,src_bit_shift)                                             \
+            slli_len_macro(t1,t0, index_bit_shift)                                            \
+            "add a3,a3, t1;"                                                                  \
+            "mv a4, a2;"                                                                      \
+        "blocke_loop%=:;"                                                                     \
+            vsetvli_macro(x0, x0, src_date_type_len, src_lmul)                                \
+            vluxei_len_macro(index_date_type_len,v16, (%[src]), v8)                           \
+            "vsse32.v v16, (a4), t4;"                                                         \
+            "addi a1, a1, -1;"                                                                \
+            "beqz a1, over%=;"                                                                \
+            "addi a4, a4, 4;"                                                                 \
+            vsetvli_macro(x0, x0, index_date_type_len, index_lmul)                            \
+            "vadd.vi v8, v8, 4;"                                                              \
+            "j blocke_loop%=;"                                                                \
+        "over%=:;"                                                                            \
+            slli_len_macro(t1,t0, src_bit_shift)                                              \
+            "add a2,a2, t1;"                                                                  \
+            "bnez a0, gater_STRAT%=;"                                                         \
+            :                                                                                 \
+            :[src] "r"(src),[index_count]"r"(index_count),                                    \
+            [dst] "r"(dst), [index_ptr] "r"(index_ptr), [block_size]"r"(block_size)           \
+            : "t0", "a0", "a1", "a2", "a3","a4","t1","t2","t3","t4", "ft0", "v8", "v16");     \
+}
+
 REGISTER_GATHER_IMPL(32, 64, 1, 2, 2, 3)
 REGISTER_GATHER_IMPL(64, 64, 2, 2, 3, 3)
+
+REGISTER_GATHER_IMPL2(32, 64, 1, 2, 2, 3)
 
 namespace {
 template <class T, class IndicesT>
@@ -92,17 +131,18 @@ void kvx(const T*src, T* dst, const IndicesT* index_ptr, int index_count, int bl
         }
     }
     #else
-        printf("+++++++++++risv64 ---index_count : %d, block_size:%d, %d,%d\n", index_count, (int)(block_size), (int)(block_size* sizeof(T)), (int)sizeof(T));
+        printf("+++++++++++risv64 -index_count : %d, block_size:%d, %d,%d\n", index_count, (int)(block_size), (int)(block_size* sizeof(T)), (int)sizeof(T));
             (void)block_size;
             (void)index_ptr;
-        if(block_size * sizeof(T) * 8 == 32)
-        {
-            s32_i64_impl(src, dst, index_ptr, index_count);
-        }
-        else if(block_size * sizeof(T) * 8 == 64)
-        {
-            s64_i64_impl(src, dst, index_ptr, index_count);
-        }
+            s32_i64_impl2(src, dst, index_ptr, index_count, block_size);
+        // if(block_size * sizeof(T) * 8 == 32)
+        // {
+        //     s32_i64_impl(src, dst, index_ptr, index_count);
+        // }
+        // else if(block_size * sizeof(T) * 8 == 64)
+        // {
+        //     s64_i64_impl(src, dst, index_ptr, index_count);
+        // }
         
         //     __asm volatile(
         //     "mv a0, %[index_count];" // count 
