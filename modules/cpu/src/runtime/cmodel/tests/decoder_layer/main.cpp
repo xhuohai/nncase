@@ -88,12 +88,77 @@ DEFINE_BFUNC(7)
     tdma_fill_async<float>(*block##i::shared::V40, 0);                         \
     tdma_fill_async<float>(*block##i::shared::V42, 0);
 
+#define SET_FUNC(func) \
+    nncase_mt.func = nncase_mt_impl->func;
+
 void _start(hardware_context_mt *hw_ctx_impl, runtime_util_mt *rt_util_mt,
             nncase_mt_t *nncase_mt_impl, uint8_t **inputs) {
     global_hardware_init(hw_ctx_impl);
-    runtime_util = *rt_util_mt;
-    nncase_mt = *nncase_mt_impl;
+    runtime_util.printf = rt_util_mt->printf;
+    runtime_util.malloc = rt_util_mt->malloc;
+    runtime_util.free = rt_util_mt->free;
+    runtime_util.create_thread = rt_util_mt->create_thread;
+    runtime_util.join_thread = rt_util_mt->join_thread;
+    runtime_util.rt_assert = rt_util_mt->rt_assert;
+    runtime_util.memcpy = rt_util_mt->memcpy;
+    runtime_util.memset = rt_util_mt->memset;
 
+    SET_FUNC(float_unary_abs);
+    SET_FUNC(float_unary_acos);
+    SET_FUNC(float_unary_acosh);
+    SET_FUNC(float_unary_asin);
+    SET_FUNC(float_unary_asinh);
+    SET_FUNC(float_unary_ceil);
+    SET_FUNC(float_unary_cos);
+    SET_FUNC(float_unary_cosh);
+    SET_FUNC(float_unary_exp);
+    SET_FUNC(float_unary_floor);
+    SET_FUNC(float_unary_log);
+    SET_FUNC(float_unary_logical_not);
+    SET_FUNC(float_unary_neg);
+    SET_FUNC(float_unary_round);
+    SET_FUNC(float_unary_rsqrt);
+    SET_FUNC(float_unary_sign);
+    SET_FUNC(float_unary_sin);
+    SET_FUNC(float_unary_sinh);
+    SET_FUNC(float_unary_sqrt);
+    SET_FUNC(float_unary_square);
+    SET_FUNC(float_unary_tanh);
+    // float bianry
+    SET_FUNC(float_binary_add);
+    SET_FUNC(float_binary_sub);
+    SET_FUNC(float_binary_mul);
+    SET_FUNC(float_binary_div);
+    SET_FUNC(float_binary_min);
+    SET_FUNC(float_binary_max);
+    SET_FUNC(float_binary_pow);
+    SET_FUNC(float_binary_logical_and);
+    SET_FUNC(float_binary_mod);
+    // int32 bianry
+    SET_FUNC(int32_binary_add);
+    SET_FUNC(int32_binary_sub);
+    SET_FUNC(int32_binary_mul);
+    SET_FUNC(int32_binary_div);
+    SET_FUNC(int32_binary_min);
+    SET_FUNC(int32_binary_max);
+    SET_FUNC(int32_binary_pow);
+    SET_FUNC(int32_binary_logical_and);
+    SET_FUNC(int32_binary_mod);
+    // int64 bianry
+    SET_FUNC(int64_binary_add);
+    SET_FUNC(int64_binary_sub);
+    SET_FUNC(int64_binary_mul);
+    SET_FUNC(int64_binary_div);
+    SET_FUNC(int64_binary_min);
+    SET_FUNC(int64_binary_max);
+    SET_FUNC(int64_binary_pow);
+    SET_FUNC(int64_binary_logical_and);
+    SET_FUNC(int64_binary_mod);
+    // bool binary
+    SET_FUNC(bool_binary_and);
+    SET_FUNC(bool_binary_or);
+    SET_FUNC(bool_binary_xor);
+    runtime_util.printf("hello\n");
     MALLOC_IMM(15, ImmOutputs[0], float, (1 * 384 * 8192),
                dims_t({1, 384, 8192}))
     MALLOC_IMM(16, ImmOutputs[1], float, (1 * 64 * 384 * 128),
