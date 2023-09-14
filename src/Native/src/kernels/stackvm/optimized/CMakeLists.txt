@@ -17,7 +17,7 @@ set(SRCS concat.cpp
          slice.cpp
          dequantize.cpp
          resize_image.cpp
-         gather.cpp
+        #  gather.cpp
          gather_nd.cpp
          quantize.cpp
          onehot.cpp
@@ -52,6 +52,7 @@ _TARGET_ARCH_FILES(TARGET kernels
                    where.cpp
                    log_softmax.cpp
                    reduce.cpp
+                   gather.cpp
 )
 
 if(NOT MSVC)
