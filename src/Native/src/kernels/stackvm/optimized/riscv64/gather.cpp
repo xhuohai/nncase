@@ -32,7 +32,7 @@ using namespace nncase::kernels::stackvm::optimized;
 #define STR(x) _STR(x)
 #define _CONNECT(a, b) a##b
 #define CONNECT(a, b) _CONNECT(a, b)
-#define vsetvli_macro(evl, avl, elen, mlen)                                             \
+#define vsetvli_macro(evl, avl, elen, mlen)  \
     "vsetvli " STR(evl) "," STR(avl) "," STR(CONNECT(e, elen)) "," STR(CONNECT(m, mlen)) ";"
 #define vle_len_macro(eew,vd, rs) \
 STR(CONNECT(vle, eew)) ".v" " " STR(vd) "," STR(rs) ";"
@@ -48,6 +48,17 @@ STR(CONNECT(vluxei, ilen)) ".v" " " STR(vd) "," STR(rs) "," STR(vindex) ";"
 
 #define slli_len_macro(rd,rs,shift_bits) \
 "slli " STR(rd) ", " STR(rs) ", " STR(shift_bits) ";"
+
+#define addi_macro(rd,rs,add_num) \
+"addi " STR(rd) ", " STR(rs) ", " STR(add_num) ";"
+
+#define vsse_len_macro(ilen,vd, md, stride) \
+STR(CONNECT(vsse, ilen)) ".v" " " STR(vd) "," STR(md) "," STR(stride) ";"
+
+#define vaddi_macro(vd, vs, idata) \
+"vadd.vi " STR(vd) ", " STR(vs) ", " STR(idata) ";"
+//  "vadd.vi v8, v8, 4;"
+// "vsse32.v v16, (a4), t4;"
 
 #define REGISTER_GATHER_IMPL(src_date_type_len, index_date_type_len, src_lmul, index_lmul, src_bit_shift, index_bit_shift)    \
 static void s##src_date_type_len##_i##index_date_type_len##_impl(const void*src, void* dst, const void* index_ptr, int index_count)   \
@@ -80,12 +91,13 @@ static void s##src_date_type_len##_i##index_date_type_len##_impl(const void*src,
 #define REGISTER_GATHER_IMPL2(src_date_type_len, index_date_type_len, src_lmul, index_lmul, src_bit_shift, index_bit_shift)    \
 static void s##src_date_type_len##_i##index_date_type_len##_impl2(const void*src, void* dst, const void* index_ptr, int index_count, int block_size)   \
 {                                                                                             \
-            __asm volatile(                                                                   \
+        __asm volatile(                                                                       \
             "mv a0, %[index_count];"                                                          \
             "mv a1, %[block_size];"                                                           \
             "mv a2, %[dst];"                                                                  \
             "mv a3, %[index_ptr];"                                                            \
-            "addi t4,x0, 8;"                                                                  \
+            addi_macro(t4,t0,src_date_type_len / 8)                                           \
+            "mul t4,t4, a1;"                                                                 \
         "gater_STRAT%=:;"                                                                     \
             vsetvli_macro(t0, a0, index_date_type_len, index_lmul)                            \
             "sub a0, a0, t0;"                                                                 \
@@ -97,12 +109,12 @@ static void s##src_date_type_len##_i##index_date_type_len##_impl2(const void*src
         "blocke_loop%=:;"                                                                     \
             vsetvli_macro(x0, x0, src_date_type_len, src_lmul)                                \
             vluxei_len_macro(index_date_type_len,v16, (%[src]), v8)                           \
-            "vsse32.v v16, (a4), t4;"                                                         \
+            vsse_len_macro(src_date_type_len, v16, (a4), t4)                                  \
             "addi a1, a1, -1;"                                                                \
             "beqz a1, over%=;"                                                                \
-            "addi a4, a4, 4;"                                                                 \
+            addi_macro(a4,a4,src_date_type_len / 8)                                           \
             vsetvli_macro(x0, x0, index_date_type_len, index_lmul)                            \
-            "vadd.vi v8, v8, 4;"                                                              \
+            vaddi_macro(v8, v8, src_date_type_len / 8)                                        \
             "j blocke_loop%=;"                                                                \
         "over%=:;"                                                                            \
             slli_len_macro(t1,t0, src_bit_shift)                                              \
@@ -118,6 +130,9 @@ REGISTER_GATHER_IMPL(32, 64, 1, 2, 2, 3)
 REGISTER_GATHER_IMPL(64, 64, 2, 2, 3, 3)
 
 REGISTER_GATHER_IMPL2(32, 64, 1, 2, 2, 3)
+REGISTER_GATHER_IMPL2(16, 64, 1, 4, 1, 3)
+REGISTER_GATHER_IMPL2(8, 64, 1, 8, 0, 3)
+REGISTER_GATHER_IMPL2(64, 64, 8, 8, 3, 3)
 
 namespace {
 template <class T, class IndicesT>
@@ -134,7 +149,23 @@ void kvx(const T*src, T* dst, const IndicesT* index_ptr, int index_count, int bl
         printf("+++++++++++risv64 -index_count : %d, block_size:%d, %d,%d\n", index_count, (int)(block_size), (int)(block_size* sizeof(T)), (int)sizeof(T));
             (void)block_size;
             (void)index_ptr;
+        if(sizeof(T) ==  4)
+        {
             s32_i64_impl2(src, dst, index_ptr, index_count, block_size);
+        }
+        else if(sizeof(T) == 2)
+        {
+            s16_i64_impl2(src, dst, index_ptr, index_count, block_size);
+        }
+        else if(sizeof(T) == 1)
+        {
+            s8_i64_impl2(src, dst, index_ptr, index_count, block_size);
+        }
+        else if(sizeof(T) == 8)
+        {
+            s64_i64_impl2(src, dst, index_ptr, index_count, block_size);
+        }
+            
         // if(block_size * sizeof(T) * 8 == 32)
         // {
         //     s32_i64_impl(src, dst, index_ptr, index_count);
