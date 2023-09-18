@@ -61,8 +61,8 @@ STR(CONNECT(vsse, ilen)) ".v" " " STR(vd) "," STR(md) "," STR(stride) ";"
 #define vaddi_macro(vd, vs, idata) \
 "vadd.vi " STR(vd) ", " STR(vs) ", " STR(idata) ";"
 
-#define REGISTER_GATHER_IMPL_CP(date_type_bits, bit_shift)    \
-void cy_data##date_type_bits(void* dst, const void* src, int data_bytes, int shift_bit) \
+#define REGISTER_GATHER_IMPL_CP(date_type_bits, bit_shift, emul)     \
+static void cy_data##date_type_bits(void* dst, const void* src, int data_bytes, int shift_bit) \
 {                                                                       \
     __asm volatile(                                                     \
     "mv a0, %[data_bytes];"                                             \
@@ -70,7 +70,7 @@ void cy_data##date_type_bits(void* dst, const void* src, int data_bytes, int shi
     "mv a2, %[dst];"                                                    \
     srli_len_macro(a0, a0, bit_shift)                                   \
 "loop1cpy_data%=:;"                                                     \
-    vsetvli_macro(t0, a0, 8, 2)                                         \
+    vsetvli_macro(t0, a0, date_type_bits, emul)                         \
     vle_len_macro(date_type_bits,v8, (a1))                              \
     slli_len_macro(t1, t0, bit_shift)                                   \
     vse_len_macro(date_type_bits,v8, (a2))                              \
@@ -83,10 +83,10 @@ void cy_data##date_type_bits(void* dst, const void* src, int data_bytes, int shi
     : "t0", "t1", "a0", "a1", "a2", "v8", "v16");                                         \
 }
 
-REGISTER_GATHER_IMPL_CP(32, 2) 
-REGISTER_GATHER_IMPL_CP(8, 0)
-REGISTER_GATHER_IMPL_CP(16, 1)
-REGISTER_GATHER_IMPL_CP(64, 3)   
+REGISTER_GATHER_IMPL_CP(32, 2, 8) 
+REGISTER_GATHER_IMPL_CP(8, 0, 8)
+REGISTER_GATHER_IMPL_CP(16, 1, 8)
+REGISTER_GATHER_IMPL_CP(64, 3, 8)   
 // void cy_data(void* dst, const void* src, int data_bytes, int shift_bit)
 // {
 //     __asm volatile(
@@ -185,7 +185,7 @@ namespace {
 template <class T, class IndicesT>
 void kvx(const T*src, T* dst, const IndicesT* index_ptr, int index_count, int block_size)
 {
-    #if(1)
+    #if(0)
     {
         for(int i = 0; i < index_count; ++i)
         {
