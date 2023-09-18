@@ -87,25 +87,6 @@ REGISTER_GATHER_IMPL_CP(32, 2, 8)
 REGISTER_GATHER_IMPL_CP(8, 0, 8)
 REGISTER_GATHER_IMPL_CP(16, 1, 8)
 REGISTER_GATHER_IMPL_CP(64, 3, 8)   
-// void cy_data(void* dst, const void* src, int data_bytes, int shift_bit)
-// {
-//     __asm volatile(
-//     "mv a0, %[data_bytes];"
-//     "mv a1, %[src];"
-//     "mv a2, %[dst];"
-// "loop1cpy_data%=:;"
-//     "vsetvli t0, a0, e8, m2;"
-//     "vle8.v v8, (a1);"
-//     "sll t1,t0, %[shift_bit];"
-//     "vse8.v v8, (a2);"
-//     "add a1, a1, t1;"
-//     "add a2, a2, t1;"
-//     "sub a0, a0, t0;"
-//     "bnez a0, loop1cpy_data%=;"
-//     :
-//     :[src] "r"(src),[data_bytes]"r"(data_bytes),[dst] "r"(dst), [shift_bit]"r"(shift_bit)
-//     : "t0", "t1", "a0", "a1", "a2", "v8", "v16");
-// }
 
 #define REGISTER_GATHER_IMPL(src_date_type_len, index_date_type_len, src_lmul, index_lmul, src_bit_shift, index_bit_shift)    \
 static void s##src_date_type_len##_i##index_date_type_len##_impl(const void*src, void* dst, const void* index_ptr, int index_count)   \
@@ -136,7 +117,7 @@ static void s##src_date_type_len##_i##index_date_type_len##_impl(const void*src,
 
 
 #define REGISTER_GATHER_IMPL2(src_date_type_len, index_date_type_len, src_lmul, index_lmul, src_bit_shift, index_bit_shift)    \
-static void s##src_date_type_len##_i##index_date_type_len##_impl2(const void*src, void* dst, const void* index_ptr, int index_count, int block_size)   \
+static void s##src_date_type_len##_i##index_date_type_len##_impl2(const void*src, void* dst, const void* index_ptr, int index_count, int block_size, int axis_data)   \
 {                                                                                             \
         __asm volatile(                                                                       \
             "mv a0, %[index_count];"                                                          \
@@ -149,7 +130,10 @@ static void s##src_date_type_len##_i##index_date_type_len##_impl2(const void*src
             vsetvli_macro(t0, a0, index_date_type_len, index_lmul)                            \
             "sub a0, a0, t0;"                                                                 \
             vle_len_macro(index_date_type_len,v8,(a3))                                        \
+                        "vmslt.vi v0, v8, 0;"\
+            "vadd.vx v8, v8, %[axis_data], v0.t;"\
             vsllvi_len_macro(v8,v8,src_bit_shift)                                             \
+            "vmul.vx v8,v8,  a1;" \
             slli_len_macro(t1,t0, index_bit_shift)                                            \
             "add a3,a3, t1;"                                                                  \
             "mv a4, a2;"                                                                      \
@@ -169,12 +153,14 @@ static void s##src_date_type_len##_i##index_date_type_len##_impl2(const void*src
             "bnez a0, gater_STRAT%=;"                                                         \
             :                                                                                 \
             :[src] "r"(src),[index_count]"r"(index_count),                                    \
-            [dst] "r"(dst), [index_ptr] "r"(index_ptr), [block_size]"r"(block_size)           \
+            [dst] "r"(dst), [index_ptr] "r"(index_ptr), [block_size]"r"(block_size), [axis_data]"r"(axis_data)           \
             : "t0", "a0", "a1", "a2", "a3","a4","t1","t2","t3","t4", "ft0", "v8", "v16");     \
 }
 
 REGISTER_GATHER_IMPL(32, 64, 1, 2, 2, 3)
 REGISTER_GATHER_IMPL(64, 64, 2, 2, 3, 3)
+REGISTER_GATHER_IMPL(16, 64, 1, 4, 2, 3)
+REGISTER_GATHER_IMPL(8, 64, 1, 8, 3, 3)
 
 REGISTER_GATHER_IMPL2(32, 64, 1, 2, 2, 3)
 REGISTER_GATHER_IMPL2(16, 64, 1, 4, 1, 3)
@@ -183,14 +169,37 @@ REGISTER_GATHER_IMPL2(64, 64, 8, 8, 3, 3)
 
 namespace {
 template <class T, class IndicesT>
-void kvx(const T*src, T* dst, const IndicesT* index_ptr, int index_count, int block_size)
+void kvx(const T*src, T* dst, const IndicesT* index_ptr, int index_count, int block_size, int axis_data)
 {
     #if(0)
     {
+        (void)axis_data;
         for(int i = 0; i < index_count; ++i)
         {
             // memcpy(dst + i * block_size, src + index_ptr[i] * block_size, block_size * sizeof(T));
-            cy_data32(dst + i * block_size, src + index_ptr[i] * block_size, block_size * sizeof(T), 0);
+            int __index = index_ptr[i];
+            if(index_ptr[i] < 0)
+            {
+                __index = axis_data + __index;
+            }
+            if(sizeof(T) == 1)
+            {
+                cy_data8(dst + i * block_size, src + __index * block_size, block_size * sizeof(T), 0);
+            }
+            else if(sizeof(T) == 2)
+            {
+                cy_data16(dst + i * block_size, src + __index * block_size, block_size * sizeof(T), 0);
+            }
+            else if(sizeof(T) == 4)
+            {
+                cy_data32(dst + i * block_size, src + __index * block_size, block_size * sizeof(T), 0);
+            }
+            else if(sizeof(T) == 8)
+            {
+                cy_data64(dst + i * block_size, src + __index * block_size, block_size * sizeof(T), 0);
+            }
+            
+            // cy_data32(dst + i * block_size, src + index_ptr[i] * block_size, block_size * sizeof(T), 0);
         }
     }
     #else
@@ -199,19 +208,19 @@ void kvx(const T*src, T* dst, const IndicesT* index_ptr, int index_count, int bl
             (void)index_ptr;
         if(sizeof(T) ==  4)
         {
-            s32_i64_impl2(src, dst, index_ptr, index_count, block_size);
+            s32_i64_impl2(src, dst, index_ptr, index_count, block_size, axis_data);
         }
         else if(sizeof(T) == 2)
         {
-            s16_i64_impl2(src, dst, index_ptr, index_count, block_size);
+            s16_i64_impl2(src, dst, index_ptr, index_count, block_size, axis_data);
         }
         else if(sizeof(T) == 1)
         {
-            s8_i64_impl2(src, dst, index_ptr, index_count, block_size);
+            s8_i64_impl2(src, dst, index_ptr, index_count, block_size, axis_data);
         }
         else if(sizeof(T) == 8)
         {
-            s64_i64_impl2(src, dst, index_ptr, index_count, block_size);
+            s64_i64_impl2(src, dst, index_ptr, index_count, block_size, axis_data);
         }
     #endif
 }
@@ -235,9 +244,7 @@ gather_impl(const T *input, T *output, gsl::span<const size_t> in_shape,
                 printf("!!!!!!!!!!!! call gather .... \n");
 
                 print_vector_by_type(indices, compute_size(indices_shape), 16, "indices", 3);
-                // int len_a = compute_size(in_shape);
-                // int len_b = compute_size(out_shape);
-                // print_vector_by_type(input, len_a, 16, "input", 1);
+                print_vector_by_type(input, compute_size(in_shape), 16, "input", 1);
     size_t outer_count =
         std::accumulate(in_shape.begin(), in_shape.begin() + axis, 1,
                         std::multiplies<size_t>{});
@@ -264,16 +271,11 @@ gather_impl(const T *input, T *output, gsl::span<const size_t> in_shape,
         #else
         //printf("!!!!!!!!!!!!%f,%f,%f,%f\n", (float)in_ptr[0], (float)in_ptr[1], (float)in_ptr[2], (float)in_ptr[3]);
         //   print_vector_by_type(in_ptr, 4, 16, "!!!!!!in_ptr... ", 1);
-        kvx(in_ptr, out_ptr, indices, indices_count, block_size);
-            // for(int i = 0; i < indices_count; ++i)
-            // {
-            //     memcpy(out_ptr + i * block_size, in_ptr + (indices[i] >= 0 ? indices[i] : indices[i] + in_shape[axis]) * block_size, block_size * sizeof(T));
-            // }
+        kvx(in_ptr, out_ptr, indices, indices_count, block_size, in_shape[axis]);
         #endif
         in_ptr += in_shape[axis] * block_size;
         out_ptr += indices_count * block_size;
     }
-    // print_vector_by_type(output, len_b, 16, "output... ", 1);
     return ok();
 }
 } // namespace
