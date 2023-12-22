@@ -93,14 +93,4 @@ public enum BinaryOp : byte
     /// Right Shift.
     /// </summary>
     RightShift,
-
-    /// <summary>
-    /// Floor Div.
-    /// </summary>
-    FloorDiv,
-
-    /// <summary>
-    /// Ceil Div.
-    /// </summary>
-    CeilDiv,
 }

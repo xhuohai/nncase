@@ -13,20 +13,5 @@ namespace Nncase.IR.Buffers;
 /// </summary>
 public sealed partial class Allocate : Op
 {
-    /// <summary>
-    /// Get the input parameter.
-    /// </summary>
-    public static readonly ParameterInfo Size = new(typeof(Allocate), 0, "size", TypePatternUtility.IsIntegralScalar());
-
-    /// <summary>
-    /// Gets the alloacted buffer type.
-    /// </summary>
-    public DataType ElemType { get; }
-
-    public TIR.MemoryLocation Location { get; }
-
-    /// <inheritdoc/>
-    public override bool CanFoldConstCall => false;
-
-    public override string DisplayProperty() => $"{ElemType}, {Location}";
+    public TensorType ElemType { get; }
 }

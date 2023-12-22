@@ -23,7 +23,7 @@ public class MatMulEvaluator : IEvaluator<MatMul>, ITypeInferencer<MatMul>, ICos
     {
         if (VisitTensorType(a.TensorType, b.TensorType) is not TensorType outType)
         {
-            return new InvalidType($"{a.TensorType} {b.TensorType} not support");
+            return new InvalidType(string.Empty);
         }
 
         if (a.Placement != b.Placement)
@@ -162,7 +162,7 @@ public class MatMulEvaluator : IEvaluator<MatMul>, ITypeInferencer<MatMul>, ICos
         {
             (DistributedType a, DistributedType b) => VisitDistributedType(a, b),
             (TensorType a, TensorType b) => VisitTensorType(a, b),
-            _ => new InvalidType($"{lhs} {rhs} not support"),
+            _ => new InvalidType(string.Empty),
         };
     }
 

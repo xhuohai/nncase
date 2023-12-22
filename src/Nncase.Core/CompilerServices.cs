@@ -208,15 +208,6 @@ public interface ICompilerServicesProvider
     /// <param name="options">Options.</param>
     /// <returns>Rewrited expression.</returns>
     Expr ERewrite(Expr expr, IEnumerable<IRewriteRule> rules, RunPassContext options);
-
-    /// <summary>
-    /// Using EGraph rewrite expression.
-    /// </summary>
-    /// <param name="expr">Expression.</param>
-    /// <param name="rules">Rewrite rules.</param>
-    /// <param name="options">Options.</param>
-    /// <returns>Rewrited expression.</returns>
-    IEGraph ERewrite(IEGraph expr, IEnumerable<IRewriteRule> rules, RunPassContext options);
 }
 
 internal interface ICompilerServicesProviderInternal
@@ -416,18 +407,6 @@ public static class CompilerServices
     public static Expr ERewrite(Expr expr, IEnumerable<IRewriteRule> rules, RunPassContext options)
     {
         return Provider.ERewrite(expr, rules, options);
-    }
-
-    /// <summary>
-    /// Using EGraph rewrite expression.
-    /// </summary>
-    /// <param name="graph">Expression.</param>
-    /// <param name="rules">Rewrite rules.</param>
-    /// <param name="options">Options.</param>
-    /// <returns>Rewrited expression.</returns>
-    public static IEGraph ERewrite(IEGraph graph, IEnumerable<IRewriteRule> rules, RunPassContext options)
-    {
-        return Provider.ERewrite(graph, rules, options);
     }
 
     /// <summary>
@@ -697,10 +676,5 @@ internal class CompilerServicesProvider : ICompilerServicesProvider, ICompilerSe
     public Expr ERewrite(Expr expr, IEnumerable<IRewriteRule> rules, RunPassContext options)
     {
         return _eGraphrewriteProvider.ERewrite(expr, rules, options);
-    }
-
-    public IEGraph ERewrite(IEGraph graph, IEnumerable<IRewriteRule> rules, RunPassContext options)
-    {
-        return _eGraphrewriteProvider.ERewrite(graph, rules, options);
     }
 }

@@ -30,7 +30,7 @@ public abstract class ModulePass : Pass<IRModule, IRModule>
         {
             foreach (var func in input.Functions)
             {
-                DumpScope.Current.DumpIR(func, string.Empty, "Start");
+                DumpScope.Current.DumpIR(func, func.Name, "Start");
             }
         }
 
@@ -44,7 +44,7 @@ public abstract class ModulePass : Pass<IRModule, IRModule>
         {
             foreach (var func in post.Functions)
             {
-                DumpScope.Current.DumpIR(func, string.Empty, "End");
+                DumpScope.Current.DumpIR(func, func.Name, "End");
             }
         }
 

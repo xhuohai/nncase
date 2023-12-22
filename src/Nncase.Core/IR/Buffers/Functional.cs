@@ -42,6 +42,4 @@ public static class Buffer
     /// create the uninitialized buffer.
     /// </summary>
     public static Call Uninitialized(DataType dataType, TIR.MemoryLocation memoryLocation, Expr shape) => new Call(new Uninitialized(dataType, memoryLocation), shape);
-
-    public static Call Allocate(Expr size, DataType dataType, TIR.MemoryLocation location) => new Call(new Allocate(dataType, location), size);
 }
