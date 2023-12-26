@@ -252,6 +252,7 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
         ptq_options = nncase.PTQTensorOptions()
         e = '"'
         for k, v in ptq_opt.items():
+            print('set_quant_opt: k={}, v={}'.format(k, v))
             exec(f"ptq_options.{k} = {e + v + e if isinstance(v, str) else v}")
 
         ptq_options.samples_count = self.cfg['generator']['calibs']['number']
