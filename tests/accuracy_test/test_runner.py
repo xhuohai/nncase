@@ -374,7 +374,7 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
                 elif method == 'constant_of_shape':
                     data = generator.from_constant_of_shape(args, dtype)
 
-                if True:
+                if False:
                     dump_bin_file(os.path.join(self.case_dir, name,
                                                f'{name}_{input_idx}_{batch_idx}.bin'), data)
                     dump_txt_file(os.path.join(self.case_dir, name,
