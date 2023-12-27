@@ -233,7 +233,7 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
                                 json_file = f'{prefix}_{os.path.basename(self.case_dir)}{suffix}'
                                 dump_dict_to_json(self.infer_report_dict, json_file)
 
-        if test_utils.in_ci():
+        if False:
             self.clear(self.case_dir)
 
     def translate_shape(self, shape):
@@ -374,7 +374,7 @@ class TestRunner(Evaluator, Inference, metaclass=ABCMeta):
                 elif method == 'constant_of_shape':
                     data = generator.from_constant_of_shape(args, dtype)
 
-                if not test_utils.in_ci():
+                if True:
                     dump_bin_file(os.path.join(self.case_dir, name,
                                                f'{name}_{input_idx}_{batch_idx}.bin'), data)
                     dump_txt_file(os.path.join(self.case_dir, name,

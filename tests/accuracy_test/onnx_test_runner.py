@@ -255,7 +255,8 @@ class OnnxTestRunner(TestRunner):
             q.put(outputs)
 
             # debug
-            if not test_utils.in_ci():
+            #if not test_utils.in_ci():
+            if True:
                 for j, output in enumerate(outputs):
                     dump_bin_file(os.path.join(self.case_dir, f'cpu_result_{i}_{j}.bin'), output)
                     # dump_txt_file(os.path.join(self.case_dir, f'cpu_result_{i}_{j}.txt'), output)

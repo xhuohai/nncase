@@ -36,7 +36,7 @@ def data_shape_list_string(data):
 
 class Inference:
     def run_inference(self, compiler, target, ptq_enabled, infer_dir):
-        in_ci = test_utils.in_ci()
+        in_ci = True
         kpu_targets = test_utils.kpu_targets()
         nuc_ip = test_utils.nuc_ip()
         nuc_port = test_utils.nuc_port()
