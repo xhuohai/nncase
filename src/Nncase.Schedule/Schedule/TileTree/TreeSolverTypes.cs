@@ -57,6 +57,10 @@ public sealed record OpNodeInfo(AffineMap[] Maps, IntExpr[][] Shapes, IntExpr[] 
 {
 }
 
+public sealed record ArgumentsLocationInfo(int OpId, int Index, bool Cached)
+{
+}
+
 public sealed record ArgumentsInfo(HashSet<BufferIdentity> Inputs, HashSet<BufferIdentity> Outputs, Dictionary<BufferIdentity, BufferIdentity> DefUseMap)
 {
     public enum BufferKind

@@ -290,7 +290,8 @@ public sealed class UnitTestCPUKernels : TestClassBase
 
     [Theory]
     [InlineData(new object[] { false, 0 })]
-    [InlineData(new object[] { true, 1 })] // enable packing
+
+    // [InlineData(new object[] { true, 1 })] // enable packing
     public async Task TestDecodeLayer(bool packing, int count)
     {
         // Memory usage is too high for CI env

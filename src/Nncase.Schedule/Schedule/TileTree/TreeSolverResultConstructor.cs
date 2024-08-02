@@ -259,7 +259,7 @@ public sealed class TreeSolverResultConstructor : TreeSolverBase, ITreeNodeVisit
         }
     }
 
-    public Call ConstructResult(string moduleKind, int itemNumber)
+    public Call ConstructResult(string moduleKind, int itemNumber, out ArgumentsLocationInfo[] argumentLocation)
     {
         // 1. schedule the buffers
         ScheduleBuffers();
@@ -268,6 +268,8 @@ public sealed class TreeSolverResultConstructor : TreeSolverBase, ITreeNodeVisit
 
         var parameters = ArgumentsInfo.Inputs.Concat(ArgumentsInfo.DefUseMap.Values).Concat(ArgumentsInfo.Outputs).Select(k => OutSideBufferMemo[k]).ToArray();
         var arguments = ArgumentsInfo.Inputs.Select(k => k.Node.Grid.Reads[k.Index]).Concat(ArgumentsInfo.DefUseMap.Values.Select(k => TilingUtilities.GetUninitialized(k.Node.Grid.Reads[k.Index]))).ToArray();
+
+        argumentLocation = ArgumentsInfo.Inputs.Select(k => new ArgumentsLocationInfo(k.Node.OpId, k.Index, false)).Concat(ArgumentsInfo.DefUseMap.Values.Select(k => new ArgumentsLocationInfo(k.Node.OpId, k.Index, true))).ToArray();
 
         var funcBuilder = T.PrimFunc($"device_func{itemNumber}", moduleKind, parameters).Body(bodyBuilder);
         var primFunc = funcBuilder.Build();

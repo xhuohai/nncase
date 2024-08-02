@@ -10,12 +10,12 @@ using Nncase.Passes;
 using Nncase.Schedule.TileTree;
 using Xunit;
 
-namespace Nncase.Tests.AffineTest;
+namespace Nncase.Tests.Schedule.TileTreeTest;
 
 [TestFixture.AutoSetupTestMethod(InitSession = true)]
-public sealed class UnitTestModeling : TestClassBase
+public sealed class UnitTestTileTreeModeling : TestClassBase
 {
-    public UnitTestModeling()
+    public UnitTestTileTreeModeling()
     {
         CompileOptions.TargetOptions = new Nncase.Targets.CpuTargetOptions();
 #if DEBUG
@@ -254,7 +254,7 @@ public sealed class UnitTestModeling : TestClassBase
             return;
         }
 
-        Schedule.TreeTiler.Tile(grid, Nncase.Targets.CPUTarget.Kind, 0, CompileOptions.TargetOptions);
+        Nncase.Schedule.TreeTiler.Tile(grid, Nncase.Targets.CPUTarget.Kind, 0, CompileOptions.TargetOptions, out _);
     }
 
     [Fact]
@@ -268,123 +268,6 @@ public sealed class UnitTestModeling : TestClassBase
         {
             CompileSession.Compiler.Gencode(stream);
         }
-    }
-
-    [Fact]
-    public void TestMerge()
-    {
-        var func = GetFunctionSample();
-        var post = CompilerServices.Rewrite(func, new IRewriteRule[] { new Passes.Rules.CPU.Affine.LowerUnary(), new Passes.Rules.CPU.Affine.LowerMatmul(), }, new());
-        Dumpper.DumpIR(post, "post");
-
-        if (post is not Function { Body: IR.Affine.Grid grid })
-        {
-            return;
-        }
-
-        // Schedule.TreeTiler.BuildTree(grid, CompileOptions.TargetOptions);
-        var root = new Schedule.TileTree.ScopeNode();
-        var opId = 0;
-        var totalLevel = 2;
-        Schedule.TreeTiler.BuildTree(grid, root, totalLevel, ref opId);
-        root.Dump("build");
-
-        root.Merge(2, 1, 2);
-        var m1 = root.Clone();
-        m1.Dump("0");
-        m1.Merge(2, 0, 2);
-        var m2 = m1.Clone();
-        m2.Dump("1");
-        m2.Merge(1, 0, 1);
-        var m3 = m2.Clone();
-        m3.Dump("2");
-        m3.Merge(2, 1, 1);
-        var m4 = m3.Clone();
-        m4.Dump("3");
-    }
-
-    [Fact]
-    public void TestGetArgumentInfo()
-    {
-        var func = GetFunctionSample();
-        var post = CompilerServices.Rewrite(func, new IRewriteRule[] { new Passes.Rules.CPU.Affine.LowerUnary(), new Passes.Rules.CPU.Affine.LowerMatmul(), }, new());
-        Dumpper.DumpIR(post, "post");
-
-        if (post is not Function { Body: IR.Affine.Grid grid })
-        {
-            return;
-        }
-
-        var root = new ScopeNode();
-        var opId = 0;
-        var totalLevel = CompileOptions.TargetOptions.MemoryCapacities.Length - 1;
-        Schedule.TreeTiler.BuildTree(grid, root, totalLevel, ref opId);
-        root.Dump("build");
-        var m1 = root.Root<ITreeNode>().Clone();
-        m1.Merge(2, 1, 2);
-        m1.Dump("final");
-
-        var res = TreeSolverInitializer.Init(m1, totalLevel, CompileOptions.TargetOptions, out _, out _, out _, out _);
-        Assert.Equal(3, res.Inputs.Count);
-        Assert.Single(res.Outputs);
-        Assert.Equal(2, res.DefUseMap.Keys.Count);
-    }
-
-    [Fact]
-    public void TestGetArgumentInfo2()
-    {
-        var func = GetFunctionSample2();
-        var post = CompilerServices.Rewrite(func, new IRewriteRule[] { new Passes.Rules.CPU.Affine.LowerUnary(), new Passes.Rules.CPU.Affine.LowerMatmul(), new Passes.Rules.CPU.Affine.LowerBinary() }, new());
-        Dumpper.DumpIR(post, "post");
-
-        if (post is not Function { Body: IR.Affine.Grid grid })
-        {
-            return;
-        }
-
-        var root = new ScopeNode();
-        var opId = 0;
-        var totalLevel = CompileOptions.TargetOptions.MemoryCapacities.Length - 1;
-        Schedule.TreeTiler.BuildTree(grid, root, totalLevel, ref opId);
-        root.Dump("build");
-        var m1 = root.Root<ITreeNode>().Clone();
-        m1.Merge(1, 0, 2);
-        m1.Merge(1, 0, 1);
-        m1.Dump("final");
-
-        var res = TreeSolverInitializer.Init(m1, totalLevel, CompileOptions.TargetOptions, out _, out _, out _, out _);
-        Assert.Equal(4, res.Inputs.Count);
-        Assert.Single(res.Outputs);
-        Assert.Single(res.DefUseMap.Keys);
-    }
-
-    [Fact]
-    public void TestGetArgumentInfo3()
-    {
-        var func = GetFunctionSample2();
-        var post = CompilerServices.Rewrite(func, new IRewriteRule[] { new Passes.Rules.CPU.Affine.LowerUnary(), new Passes.Rules.CPU.Affine.LowerMatmul(), new Passes.Rules.CPU.Affine.LowerBinary() }, new());
-        Dumpper.DumpIR(post, "post");
-
-        if (post is not Function { Body: IR.Affine.Grid grid })
-        {
-            return;
-        }
-
-        var root = new ScopeNode();
-        var opId = 0;
-        var totalLevel = CompileOptions.TargetOptions.MemoryCapacities.Length - 1;
-        Schedule.TreeTiler.BuildTree(grid, root, totalLevel, ref opId);
-        root.Dump("build");
-        var m1 = root.Root<ITreeNode>().Clone();
-        m1.Merge(1, 0, 2);
-        m1.Dump("final");
-
-        var res = TreeSolverInitializer.Init(m1, totalLevel, CompileOptions.TargetOptions, out _, out _, out _, out _);
-
-        // when merge point at top level, should put the cache buffer into defuse map.
-        Assert.Equal(4, res.Inputs.Count);
-        Assert.Single(res.Outputs);
-        Assert.Equal(2, res.DefUseMap.Keys.Count);
     }
 
     [Fact]

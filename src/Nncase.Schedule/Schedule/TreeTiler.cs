@@ -508,7 +508,7 @@ public static class TreeTiler
         return collector.Points;
     }
 
-    public static Call Tile(Grid grid, string moduleKind, int itemNumber, ITargetOptions targetOptions)
+    public static Call Tile(Grid grid, string moduleKind, int itemNumber, ITargetOptions targetOptions, out ArgumentsLocationInfo[] argumentLocation)
     {
         var root = new ScopeNode();
         var opId = 0;
@@ -544,7 +544,7 @@ public static class TreeTiler
             bestConstructor.Tree.Dump($"device_func{itemNumber}_best");
         }
 
-        return bestConstructor.ConstructResult(moduleKind, itemNumber);
+        return bestConstructor.ConstructResult(moduleKind, itemNumber, out argumentLocation);
     }
 
     private static List<IsomorphicTree> EnumerateAll(ITreeNode tree, int totalLevel, List<MergePoint> path)
