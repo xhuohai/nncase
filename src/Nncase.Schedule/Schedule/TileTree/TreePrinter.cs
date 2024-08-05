@@ -59,26 +59,24 @@ internal sealed class TreePrinter : ITreeNodeVisitor<TreePrinter.Context, TreePr
 
     public Result Visit(TileNode value, Context context)
     {
-        var (pid, pnames) = context;
+        var (pid, pdomain) = context;
 
-        var dimsMap = GetDimsMap(value);
-        if (!pnames.Any())
-        {
-            dimsMap.Clear();
-        }
+        var rank = value.DomainPermutation.Results.Length;
+        pdomain ??= AffineMap.Identity(rank);
 
-        var strs = new List<string>();
-        for (int i = 0; i < value.DimNames.Length; i++)
+        var lables = new List<string>();
+        var curdomain = pdomain * value.DomainRelation.Map * value.DomainPermutation;
+        for (int i = 0; i < rank; i++)
         {
-            var indent = string.Join(string.Empty, Enumerable.Repeat("  ", i));
-            var label = dimsMap.ContainsKey(i) ? pnames[dimsMap[i]] : value.DimNames[i];
-            strs.Add($"{indent}For {label}");
+            var indent = string.Join(string.Empty, Enumerable.Repeat("    ", i));
+            var label = GetDisplayString(curdomain.Results[i].Extent, Array.Empty<AffineSymbol>(), $"Op{value.OpId}_L{value.Level}_d", $"Op{value.OpId}_L{value.Level}_d");
+            lables.Add($"{indent}For {label}");
         }
 
         var node = Graph.Nodes.Add(value.ToString());
-        node.ToRecordNode(rb1 => rb1.AppendField($"Op{value.OpId}").AppendField(string.Join('\n', strs)));
+        node.ToRecordNode(rb1 => rb1.AppendRecord(rb2 => rb2.AppendField($"Op{value.OpId}").AppendField(string.Join('\n', lables))).AppendField(value.DomainPermutation.ToString()), true);
 
-        var result = value.Child.Accept(this, context with { ParentOpId = value.OpId, Names = value.DimNames });
+        var result = value.Child.Accept(this, context with { ParentOpId = value.OpId, ParentDomain = curdomain });
 
         for (int i = 0; i < result.Nodes.Count; i++)
         {
@@ -94,8 +92,7 @@ internal sealed class TreePrinter : ITreeNodeVisitor<TreePrinter.Context, TreePr
 
     public Result Visit(OpNode value, Context context)
     {
-        var (pid, pnames) = context;
-        var dimsMap = GetDimsMap(value);
+        var (pid, pdomain) = context;
 
         var node = Graph.Nodes.Add($"{value}");
 
@@ -118,9 +115,24 @@ internal sealed class TreePrinter : ITreeNodeVisitor<TreePrinter.Context, TreePr
         return new(new() { node }, new() { value.DomainRelation });
     }
 
-    internal record Context(int ParentOpId, IReadOnlyList<string> Names)
+    private string GetDisplayString(AffineExpr expr, ReadOnlySpan<AffineSymbol> symbols, string offsetPrefix = "t", string extentPrefix = "d")
     {
-        public static Context Default => new(-1, Array.Empty<string>());
+        return expr switch
+        {
+            AffineConstant e => e.Value.ToString(),
+            AffineExtent e => $"{offsetPrefix}{e.Position}",
+            AffineDim e => $"{extentPrefix}{e.Position}",
+            AffineSymbol e => e.ToString(),
+            AffineAddBinary e => $"({GetDisplayString(e.Lhs, symbols, offsetPrefix, extentPrefix)} + {GetDisplayString(e.Rhs, symbols, offsetPrefix, extentPrefix)})",
+            AffineMulBinary e => $"({GetDisplayString(e.Lhs, symbols, offsetPrefix, extentPrefix)} * {GetDisplayString(e.Rhs, symbols, offsetPrefix, extentPrefix)})",
+            AffineDivBinary e => $"({GetDisplayString(e.Lhs, symbols, offsetPrefix, extentPrefix)} {IR.F.Affine.ToString(e.BinaryOp)} {GetDisplayString(e.Rhs, symbols, offsetPrefix, extentPrefix)})",
+            _ => throw new System.Diagnostics.UnreachableException(),
+        };
+    }
+
+    internal record Context(int ParentOpId, AffineMap? ParentDomain)
+    {
+        public static Context Default => new(-1, null);
     }
 
     internal record Result(List<DotNode> Nodes, List<DomainRelation> Relations)

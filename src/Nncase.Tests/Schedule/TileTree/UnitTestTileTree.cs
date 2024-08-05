@@ -1,6 +1,7 @@
 // Copyright (c) Canaan Inc. All rights reserved.
 // Licensed under the Apache license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Nncase.Diagnostics;
@@ -21,6 +22,23 @@ public sealed class UnitTestTileTree : TestClassBase
 #if DEBUG
         CompileOptions.DumpFlags = Diagnostics.DumpFlags.PassIR;
 #endif
+    }
+
+    [Fact]
+    public void TestDomainRelationPermutation()
+    {
+        // [0,1,2] -> [0,1,2]
+        var domain = 3;
+        var lists = Enumerable.Range(0, domain).Permutate().ToList();
+        Assert.Equal(Enumerable.Range(1, domain).Aggregate(1, (a, b) => a * b), lists.Count);
+        Assert.Equal(new[] { 0, 2, 1 }, lists[1]);
+
+        var map1 = AffineMap.Permutation(lists[1]);
+        var remap1 = AffineMap.Permutation(lists[1].InvPermutation());
+
+        var idmap = AffineMap.Identity(domain);
+
+        Assert.Equal(idmap, map1 * remap1);
     }
 
     [Fact]
@@ -140,6 +158,27 @@ public sealed class UnitTestTileTree : TestClassBase
         Assert.Equal(4, res.Inputs.Count);
         Assert.Single(res.Outputs);
         Assert.Equal(2, res.DefUseMap.Keys.Count);
+    }
+
+    [Fact]
+    public void TestPermute1()
+    {
+        var func = GetFunctionSample();
+        var post = CompilerServices.Rewrite(func, new IRewriteRule[] { new Passes.Rules.CPU.Affine.LowerUnary(), new Passes.Rules.CPU.Affine.LowerMatmul(), }, new());
+        Dumpper.DumpIR(post, "post");
+
+        if (post is not Function { Body: IR.Affine.Grid grid })
+        {
+            return;
+        }
+
+        var root = new ScopeNode();
+        var opId = 0;
+        var totalLevel = 2;
+        Nncase.Schedule.TreeTiler.BuildTree(grid, root, totalLevel, ref opId);
+        root.Dump("build");
+        root.Reorder(0, 2, new[] { 0, 2, 1 });
+        root.Dump("reordered");
     }
 
     [Fact]

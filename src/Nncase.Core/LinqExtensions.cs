@@ -65,7 +65,7 @@ public static class LinqExtensions
     }
 
     /// <summary>
-    /// Get the permutation of the source.
+    /// Get the permutations of the source.
     /// </summary>
     /// <typeparam name="T">Element type.</typeparam>
     /// <param name="source">Source sequences.</param>
@@ -79,6 +79,16 @@ public static class LinqExtensions
             reminder.SelectMany((c, i) => Permutation(
                 reminder.Take(i).Concat(reminder.Skip(i + 1)).ToArray(),
                 prefix.Append(c)));
+    }
+
+    /// <summary>
+    /// give a permutation return its inverse permutation.
+    /// </summary>
+    /// <param name="permutation">input perm.</param>
+    /// <returns>inverse permutation.</returns>
+    public static int[] InvPermutation(this IEnumerable<int> permutation)
+    {
+        return permutation.Select((v, i) => (v, i)).OrderBy(p => p.v).Select(p => p.i).ToArray();
     }
 
     /// <summary>

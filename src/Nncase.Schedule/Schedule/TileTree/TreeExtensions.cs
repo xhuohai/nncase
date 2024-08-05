@@ -55,6 +55,12 @@ public static class TreeExtensions
         return tree.Accept(merger, default);
     }
 
+    public static void Reorder(this ITreeNode tree, int op, int level, int[] perm)
+    {
+        var permuter = new TreePermuter(op, level, perm);
+        tree.Accept(permuter, null);
+    }
+
     public static ITileAbleNode? GetParentTileableNode(this ITreeNode node)
     {
         return node.Parent switch

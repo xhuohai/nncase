@@ -29,7 +29,7 @@ internal partial class TreeCloner : ITreeNodeVisitor<Unit, ITreeNode>
     {
         if (!_memo.TryGetValue(value, out var nTile))
         {
-            nTile = new TileNode(value.Level, value.OpId, value.DimNames)
+            nTile = new TileNode(value.Level, value.OpId, value.DomainPermutation.Results.Length)
             {
                 DomainRelation = value.DomainRelation,
                 Child = value.Child.Accept(this, arg1),
@@ -44,7 +44,7 @@ internal partial class TreeCloner : ITreeNodeVisitor<Unit, ITreeNode>
     {
         if (!_memo.TryGetValue(value, out var nOp))
         {
-            nOp = new OpNode(value.Grid, value.Op, value.OpId, value.DimNames, value.DomainBounds, value.BufferShapes.Select(x => (IEnumerable<int>)x), value.Dependences.Select(d => new OpNode.Dependence(d.Index, (OpNode)_memo[d.Node])))
+            nOp = new OpNode(value.Grid, value.Op, value.OpId, value.DomainBounds, value.BufferShapes.Select(x => (IEnumerable<int>)x), value.Dependences.Select(d => new OpNode.Dependence(d.Index, (OpNode)_memo[d.Node])))
             {
                 DomainRelation = value.DomainRelation,
             };

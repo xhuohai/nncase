@@ -32,9 +32,10 @@ public interface ITileAbleNode : ITreeNode
     int OpId { get; }
 
     /// <summary>
-    /// Gets the domain var names.
+    /// Gets or sets this node's domain permutation.
+    /// note `ParentDomain * domainRelation` => identity., `ParentDomain * DomainRelation * DomainPermutation` => currentNodeDomain.
     /// </summary>
-    ImmutableArray<string> DimNames { get; }
+    AffineMap DomainPermutation { get; set; }
 
     /// <summary>
     /// Gets or sets the domain relation which from parent domain map to current node's domain.
@@ -52,6 +53,11 @@ public sealed record DomainRelation(int DomainOp, int RangeOp, AffineMap Map)
         }
 
         return new DomainRelation(DomainOp, other.RangeOp, Map * other.Map);
+    }
+
+    public DomainRelation ApplyRange(AffineMap map)
+    {
+        return new DomainRelation(DomainOp, RangeOp, Map * map);
     }
 
     public override string ToString() => $"Op{DomainOp} -> Op{RangeOp}: {Map}";
@@ -106,12 +112,12 @@ public sealed class TileNode : ITileAbleNode
 {
     private ITreeNode _child;
 
-    public TileNode(int level, int opId, IEnumerable<string> dimNames)
+    public TileNode(int level, int opId, int dimension)
     {
         Level = level;
         OpId = opId;
-        DimNames = ImmutableArray.CreateRange(dimNames);
-        DomainRelation = new(opId, opId, AffineMap.Identity(DimNames.Length));
+        DomainPermutation = AffineMap.Identity(dimension);
+        DomainRelation = new(opId, opId, AffineMap.Identity(dimension));
         _child = null!;
     }
 
@@ -126,9 +132,10 @@ public sealed class TileNode : ITileAbleNode
     /// </summary>
     public ImmutableArray<string> DimNames { get; }
 
-    /// <summary>
-    /// Gets or sets the domain relation which from parent domain map to current node's domain.
-    /// </summary>
+    /// <inheritdoc/>
+    public AffineMap DomainPermutation { get; set; }
+
+    /// <inheritdoc/>
     public DomainRelation DomainRelation { get; set; }
 
     public ITreeNode Child
@@ -150,14 +157,14 @@ public sealed class TileNode : ITileAbleNode
 
 public sealed class OpNode : ITileAbleNode
 {
-    public OpNode(Grid grid, Op op, int opId, IEnumerable<string> dimNames, IEnumerable<int> domainBounds, IEnumerable<IEnumerable<int>> bufferShapes, IEnumerable<Dependence> dependences)
+    public OpNode(Grid grid, Op op, int opId, IEnumerable<int> domainBounds, IEnumerable<IEnumerable<int>> bufferShapes, IEnumerable<Dependence> dependences)
     {
         Level = 0;
         Grid = grid;
         Op = op;
         OpId = opId;
-        DimNames = ImmutableArray.CreateRange(dimNames);
-        DomainRelation = new(opId, opId, AffineMap.Identity(DimNames.Length));
+        DomainPermutation = AffineMap.Identity(domainBounds.Count());
+        DomainRelation = new(opId, opId, AffineMap.Identity(domainBounds.Count()));
         DomainBounds = ImmutableArray.CreateRange(domainBounds);
         BufferShapes = ImmutableArray.CreateRange(bufferShapes.Select(x => ImmutableArray.CreateRange(x)));
         Dependences = ImmutableArray.CreateRange(dependences);
@@ -178,9 +185,10 @@ public sealed class OpNode : ITileAbleNode
     /// </summary>
     public ImmutableArray<string> DimNames { get; }
 
-    /// <summary>
-    /// Gets or sets the domain relation which from parent domain map to current node's domain.
-    /// </summary>
+    /// <inheritdoc/>
+    public AffineMap DomainPermutation { get; set; }
+
+    /// <inheritdoc/>
     public DomainRelation DomainRelation { get; set; }
 
     public ImmutableArray<Dependence> Dependences { get; }

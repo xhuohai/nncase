@@ -35,12 +35,12 @@ public static class TreeTiler
             throw new InvalidOperationException("body is not call");
         }
 
-        var opNode = new OpNode(current, op, copId, dimNames, domain, bufferShapes, dependences.ToArray());
-        var tileNodeRoot = new TileNode(level, copId, dimNames);
+        var opNode = new OpNode(current, op, copId, domain, bufferShapes, dependences.ToArray());
+        var tileNodeRoot = new TileNode(level, copId, dimNames.Length);
         TileNode tileNodeTail = tileNodeRoot;
         for (int l = level - 1; l >= 1; l--)
         {
-            var child = new TileNode(l, copId, dimNames);
+            var child = new TileNode(l, copId, dimNames.Length);
             tileNodeTail.Child = child;
             tileNodeTail = child;
         }
