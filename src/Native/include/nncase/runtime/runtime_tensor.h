@@ -21,6 +21,9 @@
 #include <memory>
 #include <nncase/tensor.h>
 
+#ifdef LINUX_RUNTIME
+#include <sys/ioctl.h>
+#endif // LINUX_RUNTIME
 BEGIN_NS_NNCASE_RUNTIME
 
 // V1 APIs
@@ -56,6 +59,16 @@ NNCASE_API bool operator!=(const runtime_tensor &lhs,
 
 namespace host_runtime_tensor {
 
+#ifdef LINUX_RUNTIME
+struct paddr_import_dmabuf
+{
+    int fd;
+    uintptr_t paddr;
+};
+
+#define PADDR_IMPORT_DMABUF _IOWR('A', 0, struct paddr_import_dmabuf)
+#endif // LINUX_RUNTIME
+
 typedef enum memory_pool_ {
     pool_shared_first,
     pool_cpu_only,
@@ -88,6 +101,10 @@ create(typecode_t datatype, dims_t shape, strides_t strides,
        gsl::span<gsl::byte> data, data_deleter_t data_deleter,
        memory_pool_t pool = pool_shared_first,
        uintptr_t physical_address = 0) noexcept;
+#ifdef LINUX_RUNTIME
+NNCASE_API result<runtime_tensor>
+create_from_dmabuf(typecode_t datatype, dims_t shape, int fd, void *vaddr, memory_pool_t pool = pool_shared_first) noexcept;
+#endif
 
 NNCASE_API result<memory_pool_t>
 memory_pool(const runtime_tensor &tensor) noexcept;
