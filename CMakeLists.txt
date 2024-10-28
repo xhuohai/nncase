@@ -39,9 +39,6 @@ project(nncase
   VERSION ${NNCASE_VERSION}
   LANGUAGES C CXX ASM)
 
-find_package(nlohmann_json REQUIRED)
-include_directories(${nlohmann_json_INCLUDE_DIRS})
-
 option(ENABLE_OPENMP "OpenMP support" ON)
 option(ENABLE_HALIDE "halide kernels support" ON)
 option(DOTNET_INIT_FOR_CONFIG "Initialize dotnet from runtimeconfig" OFF)
@@ -156,7 +153,8 @@ if (BUILDING_RUNTIME)
         PATTERN "LICENSE.TXT"
         )
 else()
-
+    find_package(nlohmann_json REQUIRED)
+    include_directories(${nlohmann_json_INCLUDE_DIRS})
     if (APPLE)
         set(CMAKE_MACOSX_RPATH TRUE)
         set(CMAKE_INSTALL_RPATH "@loader_path")
