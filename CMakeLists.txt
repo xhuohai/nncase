@@ -74,6 +74,9 @@ set(THIRD_PARTY ${CMAKE_CURRENT_LIST_DIR}/third_party)
 set_property(GLOBAL PROPERTY POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_SKIP_RPATH OFF)
 
+find_package(nlohmann_json REQUIRED)
+include_directories(${nlohmann_json_INCLUDE_DIRS})
+
 if (BUILDING_RUNTIME)
     if (MSVC)
         add_definitions(/D_CRT_SECURE_NO_WARNINGS /DNOMINMAX)
@@ -106,7 +109,7 @@ if (BUILDING_RUNTIME)
 
     # Python binding
     if(BUILD_PYTHON_BINDING)
-#        add_subdirectory(python/nncaseruntime/native)
+       add_subdirectory(python/nncaseruntime/native)
     endif()
 
     install(DIRECTORY ${NNCASE_INCLUDE_DIR}/nncase
@@ -153,8 +156,6 @@ if (BUILDING_RUNTIME)
         PATTERN "LICENSE.TXT"
         )
 else()
-    find_package(nlohmann_json REQUIRED)
-    include_directories(${nlohmann_json_INCLUDE_DIRS})
     if (APPLE)
         set(CMAKE_MACOSX_RPATH TRUE)
         set(CMAKE_INSTALL_RPATH "@loader_path")

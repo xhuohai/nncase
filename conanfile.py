@@ -49,6 +49,7 @@ class nncaseConan(ConanFile):
 
     def requirements(self):
         self.requires('gsl-lite/0.37.0')
+        self.requires('nlohmann_json/3.11.3')
         if self.options.tests:
             self.requires('gtest/1.10.0')
             self.requires('ortki/0.0.4')
@@ -64,9 +65,9 @@ class nncaseConan(ConanFile):
             self.requires('nethost/8.0.8')
             self.requires('fmt/7.1.3')
 
-        if not self.options.runtime or self.options.tests:
-            self.requires('nlohmann_json/3.11.3')
-            
+        # if not self.options.runtime or self.options.tests:
+
+
         # if (not self.options.runtime) or self.options.vulkan_runtime:
         #     self.requires('vulkan-headers/1.2.182')
         #     self.requires('vulkan-loader/1.2.182')

@@ -46,6 +46,20 @@ py::class_<runtime_tensor>(m, "RuntimeTensor")
                     arr.inc_ref();
                     return tensor;
                 })
+#ifdef LINUX_RUNTIME
+    .def_static("from_dma",
+                [](py::array arr, int fd) {
+                    arr = py::array::ensure(arr, py::array::c_style);
+                    auto src_buffer = arr.request();
+                    auto datatype = from_dtype(arr);
+                    auto tensor = host_runtime_tensor::create(
+                                      datatype, to_rt_shape(src_buffer.shape),
+                                      fd, src_buffer.ptr,
+                                      host_runtime_tensor::pool_shared_first)
+                                      .unwrap_or_throw();
+                    return tensor;
+                })
+#endif
     .def("copy_to",
          [](runtime_tensor &from, runtime_tensor &to) {
              from.copy_to(to).unwrap_or_throw();

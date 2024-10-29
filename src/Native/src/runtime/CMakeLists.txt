@@ -33,12 +33,28 @@ if (BUILDING_RUNTIME)
     set_property(TARGET runtime PROPERTY POSITION_INDEPENDENT_CODE ON)
     install(TARGETS runtime EXPORT nncaseruntimeTargets)
 
-    add_library(nncaseruntime STATIC dummy.cpp)
-    target_link_libraries(nncaseruntime PRIVATE nncasebase kernels runtime runtime_stackvm)
-    target_link_libraries(nncaseruntime PUBLIC gsl::gsl-lite)
-    set_target_properties(nncaseruntime PROPERTIES
-                                        OUTPUT_NAME "Nncase.Runtime.Native")
-    install(TARGETS nncaseruntime EXPORT nncaseruntimeTargets
+    # 静态库
+    add_library(nncaseruntime_static STATIC dummy.cpp)
+    target_link_libraries(nncaseruntime_static PRIVATE nncasebase kernels runtime runtime_stackvm)
+    target_link_libraries(nncaseruntime_static PUBLIC gsl::gsl-lite)
+    set_target_properties(nncaseruntime_static PROPERTIES
+                         OUTPUT_NAME "Nncase.Runtime.Native"
+                         CLEAN_DIRECT_OUTPUT 1)
+
+    # 动态库 
+    add_library(nncaseruntime_shared SHARED dummy.cpp)
+    target_link_libraries(nncaseruntime_shared PRIVATE nncasebase kernels runtime runtime_stackvm)
+    target_link_libraries(nncaseruntime_shared PUBLIC gsl::gsl-lite)
+    set_target_properties(nncaseruntime_shared PROPERTIES
+                         OUTPUT_NAME "Nncase.Runtime.Native"
+                         CLEAN_DIRECT_OUTPUT 1)
+
+    # 添加一个别名目标，保持向后兼容性
+    add_library(nncaseruntime ALIAS nncaseruntime_static)
+
+    # 安装静态库和动态库
+    install(TARGETS nncaseruntime_static nncaseruntime_shared
+        EXPORT nncaseruntimeTargets
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
@@ -64,7 +80,7 @@ else()
       target_compile_definitions(simulator PUBLIC -DNNCASE_DUMP_MANAGER)
     endif()
     set_property(TARGET simulator PROPERTY POSITION_INDEPENDENT_CODE ON)
-    
+
     add_library(nncaseruntime SHARED dummy.cpp)
     target_link_libraries(nncaseruntime PRIVATE nncasebase kernels simulator compiler simulator_stackvm fmt::fmt)
     target_link_libraries(nncaseruntime PUBLIC gsl::gsl-lite)

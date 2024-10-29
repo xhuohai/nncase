@@ -91,7 +91,19 @@ jobs:
 
     - name: Install cibuildwheel
       run: pip install cibuildwheel
-    
+
+    - name: Build runtime wheel
+      run: |
+        cd python/nncaseruntime
+        python -m cibuildwheel --output-dir runtime_wheelhouse
+
+    - name: Upload nncase-python Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: nncase-python-${{matrix.config.name}}
+        path: ${{github.workspace}}/runtime_wheelhouse
+        if-no-files-found: error
+
     - name: Build wheel
       run: python -m cibuildwheel --output-dir wheelhouse
 
