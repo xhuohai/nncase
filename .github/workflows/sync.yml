@@ -12,6 +12,9 @@ jobs:
     sync_with_upstream:
         name: Sync with Upstream
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                branch: [master, dev/3.0]
         if: ${{ github.event.repository.fork }}
 
         steps:
@@ -23,8 +26,8 @@ jobs:
               with:
                   target_repo_token: ${{ secrets.GITHUB_TOKEN }}
                   upstream_sync_repo: kendryte/nncase
-                  upstream_sync_branch: master,dev/3.0
-                  target_sync_branch: master,dev/3.0
+                  upstream_sync_branch: ${{ matrix.branch }}
+                  target_sync_branch: ${{ matrix.branch }}
                   test_mode: false
 
             - name: Check for Failure
