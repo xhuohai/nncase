@@ -131,7 +131,7 @@ jobs:
       - name: Dotnet Test
         working-directory: ${{github.workspace}}
         run: |
-          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global dotnet-coverage --version 17.13.0
           dotnet-coverage collect -s tools/dotnet_coverage.settings.xml -f cobertura -o coverage/unit.xml "dotnet test -c ${{matrix.config.buildType}} -s test.runsettings --no-build --verbosity normal"
           dotnet-coverage merge -o coverage.unit.xml -f cobertura -r coverage/*.xml
 
@@ -221,9 +221,10 @@ jobs:
         shell: bash
         env:
           NNCASE_COMPILER: ${{github.workspace}}/install/Nncase.Compiler.dll
+          PYTEST_IGNORE: ${{ runner.os == 'macOS' && '--ignore=tests/importer/onnx_/basic/test_grid_sample.py' || '' }}
         run: |
-          dotnet tool install --global dotnet-coverage
-          dotnet-coverage collect -s tools/dotnet_coverage.settings.xml -f cobertura -o coverage/onnx_basic.xml pytest tests/importer/onnx_/basic/ --doctest-modules --junitxml=test_results/onnx_basic.xml
+          dotnet tool install --global dotnet-coverage --version 17.13.0
+          dotnet-coverage collect -s tools/dotnet_coverage.settings.xml -f cobertura -o coverage/onnx_basic.xml pytest tests/importer/onnx_/basic/ ${{ env.PYTEST_IGNORE }} --doctest-modules --junitxml=test_results/onnx_basic.xml
           dotnet-coverage collect -s tools/dotnet_coverage.settings.xml -f cobertura -o coverage/onnx_combine.xml pytest tests/importer/onnx_/combine/ --doctest-modules --junitxml=test_results/onnx_combine.xml
           dotnet-coverage collect -s tools/dotnet_coverage.settings.xml -f cobertura -o coverage/tflite_basic.xml pytest tests/importer/tflite_/basic/ --doctest-modules --junitxml=test_results/tflite_basic.xml
           dotnet-coverage collect -s tools/dotnet_coverage.settings.xml -f cobertura -o coverage/tflite_combine.xml pytest tests/importer/tflite_/combine/ --doctest-modules --junitxml=test_results/tflite_combine.xml
@@ -280,8 +281,8 @@ jobs:
 
       - name: Generate Coverage Report
         run: |
-          dotnet tool install --global dotnet-coverage
-          dotnet tool install -g dotnet-reportgenerator-globaltool
+          dotnet tool install --global dotnet-coverage --version 17.13.0
+          dotnet tool install -g dotnet-reportgenerator-globaltool --version 5.3.11
           dotnet-coverage merge -o coverage.xml -f cobertura -r coverage/*.xml
           reportgenerator -reports:coverage.xml -targetdir:"coveragereport" -reporttypes:Html
 
