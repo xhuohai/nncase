@@ -1,0 +1,4 @@
+{
+  "name": "nncase",
+  "install": "bash .cursor/install.sh"
+}
